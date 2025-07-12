@@ -4,12 +4,17 @@ require("dotenv").config();
 const db = require("./firebase");
 const bcrypt = require("bcrypt");
 const app = express();
+const jwt = require("jsonwebtoken");
 const verificationCodes = new Map();
 
 app.use(cors());
 app.use(express.json());
 
 const nodemailer = require("nodemailer");
+
+const generateToken = (payload) => {
+  return jwt.sign(payload, process.env.JWT_SECRET, {expiresIn: "7d"});
+}
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -44,7 +49,8 @@ app.post("/auth/signin", async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
-    res.status(200).json({ message: "Login successful!", token: "fake-token" });
+    const token = generateToken({ email: userData.email, name: userData.name });
+    res.status(200).json({ message: "Login successful!", token });
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ message: "Internal server error" });
@@ -101,12 +107,31 @@ app.post("/auth/signup", async (req, res) => {
     });
 
     verificationCodes.delete(email);
+    const token = generateToken({ email, name });
     res
       .status(201)
-      .json({ message: "Account created successfully", token: "fake-token" });
+      .json({ message: "Account created successfully", token });
   } catch (error) {
     console.error("Signup error:", error);
     res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.post("/auth/google-signin", async (req, res) => {
+  const { email, name, picture } = req.body;
+
+  try {
+    const userRef = db.collection("user");
+    const snapshot = await userRef.where("email", "==", email).get();
+
+    if (snapshot.empty) {
+      await userRef.add({ email, name, picture, google: true });
+    }
+    const token = generateToken({ email, name, picture });
+    res.status(200).json({ message: "Google login successful!", token });
+  } catch (error) {
+    console.error("Google login error:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
