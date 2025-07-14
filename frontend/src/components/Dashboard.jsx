@@ -35,19 +35,22 @@ const Dashboard = ({ boards, selectedBoardId, onSelectBoard }) => {
                   <p className="text-gray-600 group-hover:text-gray-800 transition-colors min-h-[32px]">
                     {board.description || <span className="italic text-gray-400">No description</span>}
                   </p>
+                  <p className="text-gray-600 group-hover:text-gray-800 transition-colors min-h-[32px]">
+                     <span className="italic text-gray-400">Members: No one</span>
+                  </p>
 
                   <div
                     className="mt-4 flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button
-                      className="px-5 py-2 text-base bg-green-400 hover:bg-green-600 text-white rounded-lg font-semibold"
+                      className="px-5 py-2 text-base bg-blue-400 hover:bg-blue-600 text-white rounded-lg font-semibold"
                       onClick={() => handleEditBoard(board)}
                     >
                       Edit
                     </button>
                     <button
-                      className="px-5 py-2 text-base bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold"
+                      className="px-5 py-2 text-base bg-red-400 hover:bg-red-500 text-white rounded-lg font-semibold"
                       onClick={() => handleDeleteBoard(board.id)}
                     >
                       Delete
@@ -60,10 +63,10 @@ const Dashboard = ({ boards, selectedBoardId, onSelectBoard }) => {
 
           )}
           {selectedBoardId && selectedBoard && (
-            // <div className="w-full h-full bg-white rounded-xl shadow-lg p-6 mt-6">
+            // <div className="w-full h-full bg-white rounded-xl shadow-lg p-6 mt-6"> 
             <div className="absolute top-20 left-64 right-0 bottom-0 bg-white p-6 overflow-auto">
-              <button className="mb-4 text-blue-500 hover:underline" onClick={() => onSelectBoard(null)}>&larr; Quay lại danh sách</button>
-              <h3 className="font-bold text-2xl mb-2 text-blue-700">{selectedBoard.name}</h3>
+              <button className="px-5 py-2 text-base bg-blue-400 hover:bg-blue-600 text-white rounded-lg font-semibold" onClick={() => onSelectBoard(null)}>&larr; Return Board List</button>
+              <h3 className="font-bold text-2xl mb-2 pt-4 text-blue-700">{selectedBoard.name}</h3>
               <p className="text-gray-700 mb-2">{selectedBoard.description || <span className='italic text-gray-400'>No description</span>}</p>
               <div className="text-sm text-gray-400">ID: {selectedBoard.id}</div>
             </div>
@@ -73,5 +76,6 @@ const Dashboard = ({ boards, selectedBoardId, onSelectBoard }) => {
     </div>
   );
 };
+// aaaa
 
 export default Dashboard;

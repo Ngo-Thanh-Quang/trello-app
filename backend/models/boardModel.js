@@ -32,6 +32,6 @@ module.exports = {
   createBoard,
   getBoardsByUser,
   getBoardById,
-  // updateBoard, // Uncomment when implemented
-  // deleteBoard, // Uncomment when implemented
+  // updateBoard, 
+  // deleteBoard, 
 };

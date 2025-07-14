@@ -6,6 +6,8 @@ const authenticateToken = require("../middleware/authMiddleware");
 router.post("/", authenticateToken, boardController.createBoard);
 router.get("/", authenticateToken, boardController.getBoards);
 router.get("/:id", authenticateToken, boardController.getBoardById);
+// updateBoard, 
+// deleteBoard, 
 
 
 module.exports = router;

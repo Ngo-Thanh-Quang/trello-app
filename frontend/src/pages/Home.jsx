@@ -1,8 +1,8 @@
-  import React, { useEffect, useState } from "react";
-  import Navbar from "../components/Navbar";
-  import Login from "./Login";
-  import Sidebar from "../components/Sidebar";
-  import Dashboard from "../components/Dashboard";
+import React, { useEffect, useState } from "react";
+import Navbar from "../components/Navbar";
+import Login from "./Login";
+import Sidebar from "../components/Sidebar";
+import Dashboard from "../components/Dashboard";
 
 
 import axios from "axios";
@@ -13,6 +13,7 @@ const Home = () => {
   const [boards, setBoards] = useState([]);
   const [successMsg, setSuccessMsg] = useState("");
   const [selectedBoardId, setSelectedBoardId] = useState(null);
+  
 
   const fetchBoards = async () => {
     const token = localStorage.getItem("tokenLogin");
@@ -48,7 +49,7 @@ const Home = () => {
           {successMsg}
         </div>
       )}
-      <Sidebar boards={boards} fetchBoards={fetchBoards} showSuccess={showSuccess} onSelectBoard={setSelectedBoardId} />
+      <Sidebar boards={boards} fetchBoards={fetchBoards} showSuccess={showSuccess} onSelectBoard={setSelectedBoardId} selectedBoardId={selectedBoardId} />
       <div className="ml-64 pt-20">
         <Dashboard boards={boards} fetchBoards={fetchBoards} selectedBoardId={selectedBoardId} onSelectBoard={setSelectedBoardId} />
       </div>
@@ -58,4 +59,4 @@ const Home = () => {
   );
 };
 
-  export default Home;
+export default Home;
