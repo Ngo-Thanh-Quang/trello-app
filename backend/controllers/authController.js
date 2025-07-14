@@ -1,8 +1,8 @@
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 const { emailVerification } = require("../utils/email");
 const { getUser, createUser } = require("../models/userModel");
 const { generateToken } = require("../utils/token");
+
 
 const verificationCodes = new Map();
 
@@ -46,6 +46,8 @@ exports.signUp = async (req, res) => {
       name,
       email,
       password: hashedPassword,
+      picture: "https://res.cloudinary.com/dwalye3nj/image/upload/v1752460385/user_doe5i4.jpg",
+      google: false,
     });
 
     verificationCodes.delete(email);

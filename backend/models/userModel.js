@@ -9,3 +9,11 @@ exports.getUser = async (email) => {
 exports.createUser = async (user) => {
   return await db.collection("user").add(user);
 };
+
+exports.updateUser = async (email, update) => {
+  const snapshot = await db.collection("user").where("email", "==", email).get();
+  if (snapshot.empty) return null;
+  
+  const doc = snapshot.docs[0];
+  await doc.ref.update(update);
+}
