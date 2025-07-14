@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import gg_img from "../assets/gg_img.webp";
 import { toast } from "react-toastify";
+import { useGoogleLogin } from "@react-oauth/google";
 
 const Login = () => {
   const [state, setState] = useState("Login");
@@ -10,13 +11,14 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [showOtp, setShowOtp] = useState(false);
   const [otp, setOtp] = useState("");
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (state === "Login") {
       try {
-        const res = await axios.post("http://localhost:4000/auth/signin", {
+        const res = await axios.post(`${backendUrl}/auth/signin`, {
           email,
           password,
         });
@@ -24,8 +26,8 @@ const Login = () => {
           toast.success(res.data.message || "Login successful!");
           localStorage.setItem("tokenLogin", res.data.token);
           setTimeout(() => {
-          window.location.reload();
-        }, 1500);
+            window.location.reload();
+          }, 1500);
         }
       } catch (error) {
         if (error.response) {
@@ -38,7 +40,7 @@ const Login = () => {
     } else if (state === "Register") {
       try {
         const res = await axios.post(
-          "http://localhost:4000/auth/request-verification",
+          `${backendUrl}/auth/request-verification`,
           { email }
         );
 
@@ -50,10 +52,11 @@ const Login = () => {
       }
     }
   };
+
   const handleOtpSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:4000/auth/signup", {
+      const res = await axios.post(`${backendUrl}/auth/signup`, {
         email,
         password,
         name,
@@ -75,6 +78,37 @@ const Login = () => {
       console.error("Signup error:", error);
     }
   };
+
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      const { access_token } = tokenResponse;
+      try {
+        const profileRes = await axios.get(
+          "https://www.googleapis.com/oauth2/v3/userinfo",
+          {
+            headers: {
+              Authorization: `Bearer ${access_token}`,
+            },
+          }
+        );
+        const { email, name, picture } = profileRes.data;
+        const res = await axios.post(`${backendUrl}/auth/google-signin`, {
+          email,
+          name,
+          picture,
+        });
+        localStorage.setItem("tokenLogin", res.data.token);
+        toast.success("Login with Google successful!");
+        setTimeout(() => window.location.reload(), 1500);
+      } catch (error) {
+        toast.error("Google login failed!");
+        console.error(error);
+      }
+    },
+    onError: () => toast.error("Google login error"),
+    flow: "implicit",
+  });
+
   return (
     <div>
       <h1 className="text-3xl font-bold text-center sm:mt-10 mt-20">{state}</h1>
@@ -163,7 +197,8 @@ const Login = () => {
         <div className="flex items-center justify-between mb-6">
           <button
             className="bg-white hover:bg-gray-200 w-full border border-gray-400 text-gray-700 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer"
-            type="submit"
+            type="button"
+            onClick={() => handleGoogleLogin()}
           >
             <img src={gg_img} alt="Google" className="h-6 inline-block mr-1" />{" "}
             Google
