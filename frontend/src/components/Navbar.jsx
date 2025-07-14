@@ -11,7 +11,7 @@ const Navbar = () => {
 
   return (
     <>
-      <div className="h-20 bg-blue-500 place-content-between items-center flex md:px-10 px-5 shadow-md">
+      <div className="h-20 bg-blue-500 place-content-between items-center flex md:px-10 px-5 shadow-md fixed top-0 left-0 right-0 z-50">
         <p className="font-bold text-xl text-white">Trello App</p>
 
         <div className="gap-5 text-white font-semibold hidden sm:flex">
@@ -52,7 +52,7 @@ const Navbar = () => {
           </div>
         </div>
       </div>
-      <Outlet />
+      {/* <Outlet /> */}
     </>
   );
 };
