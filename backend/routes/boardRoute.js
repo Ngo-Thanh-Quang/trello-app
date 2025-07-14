@@ -6,7 +6,6 @@ const authenticateToken = require("../middleware/authMiddleware");
 router.post("/", authenticateToken, boardController.createBoard);
 router.get("/", authenticateToken, boardController.getBoards);
 router.get("/:id", authenticateToken, boardController.getBoardById);
-router.put("/:id", authenticateToken, boardController.updateBoard);
-router.delete("/:id", authenticateToken, boardController.deleteBoard);
+
 
 module.exports = router;

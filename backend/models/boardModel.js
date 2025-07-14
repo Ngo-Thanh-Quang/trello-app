@@ -27,19 +27,11 @@ const getBoardById = async (id) => {
   return { id: doc.id, ...doc.data() };
 };
 
-const updateBoard = async (id, data) => {
-  await boardsCollection.doc(id).update(data);
-  return { id, ...data };
-};
-
-const deleteBoard = async (id) => {
-  await boardsCollection.doc(id).delete();
-};
 
 module.exports = {
   createBoard,
   getBoardsByUser,
   getBoardById,
-  updateBoard,
-  deleteBoard,
+  // updateBoard, // Uncomment when implemented
+  // deleteBoard, // Uncomment when implemented
 };
