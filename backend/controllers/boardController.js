@@ -45,33 +45,4 @@ exports.getBoardById = async (req, res) => {
   }
 };
 
-// Cập nhật thông tin board
-exports.updateBoard = async (req, res) => {
-  const { name, description } = req.body;
-  try {
-    const board = await boardsModel.getBoardById(req.params.id);
-    if (!board || board.userEmail !== req.userEmail) {
-      return res.status(404).json({ message: "Board not found or unauthorized" });
-    }
-    const updated = await boardsModel.updateBoard(req.params.id, { name, description });
-    return res.status(200).json(updated);
-  } catch (error) {
-    console.error("Error updating board:", error);
-    return res.status(500).json({ message: "Failed to update board" });
-  }
-};
 
-// Xoá board
-exports.deleteBoard = async (req, res) => {
-  try {
-    const board = await boardsModel.getBoardById(req.params.id);
-    if (!board || board.userEmail !== req.userEmail) {
-      return res.status(404).json({ message: "Board not found or unauthorized" });
-    }
-    await boardsModel.deleteBoard(req.params.id);
-    return res.status(204).send();
-  } catch (error) {
-    console.error("Error deleting board:", error);
-    return res.status(500).json({ message: "Failed to delete board" });
-  }
-};
