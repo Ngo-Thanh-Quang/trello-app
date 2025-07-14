@@ -1,7 +1,14 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useOutletContext } from "react-router";
 
-const Dashboard = ({ boards, selectedBoardId, onSelectBoard }) => {
+const Dashboard = () => {
+  const {
+    boards = [],
+    selectedBoardId,
+    fetchBoards,
+    onSelectBoard,
+  } = useOutletContext() || {};
   const [selectedBoard, setSelectedBoard] = useState(null);
   useEffect(() => {
     if (selectedBoardId) {
