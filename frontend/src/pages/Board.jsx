@@ -12,7 +12,7 @@ const BoardPage = ({ token }) => {
 
   // danh sach bang
   const fetchBoards = async () => {
-        const token = localStorage.getItem("tokenLogin");
+    const token = localStorage.getItem("tokenLogin");
     if (!token) return;
     try {
       const res = await axios.get(`${backendUrl}/boards`, {
@@ -53,12 +53,9 @@ const BoardPage = ({ token }) => {
     const token = localStorage.getItem("tokenLogin");
     if (!token) return;
     try {
-      const res = await axios.delete(
-        `${backendUrl}/boards/${boardId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const res = await axios.delete(`${backendUrl}/boards/${boardId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (res.status === 204) {
         toast.success("Board deleted successfully!");
         await fetchBoards();
