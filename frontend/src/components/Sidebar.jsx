@@ -100,16 +100,12 @@ const Sidebar = ({ onLogout, boards, fetchBoards, onSelectBoard, selectedBoardId
             </div>
           )}
         </div>
+        <div className="flex items-center gap-3 px-4 py-3 rounded-lg w-full transition-all hover:bg-white/10">
+          <Link className="flex gap-3 rounded-lg w-full" to="/profile"><FaUser/> Profile</Link>
+        </div>
       </nav>
 
-      <button
-        className="flex items-center gap-2 px-6 py-4 border-t border-blue-500 hover:bg-white/10 transition-all"
-        onClick={onLogout}
-      >
-        <FaSignOutAlt />
-        Log out
-      </button>
-
+      
       {/* Modal tạo board */}
       {showCreate && (
         <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
