@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { FaTrello, FaUser, FaSignOutAlt, FaThLarge, FaPlus, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const Sidebar = ({ onLogout, boards, fetchBoards, onSelectBoard, selectedBoardId }) => {
   const location = useLocation();
@@ -11,6 +12,7 @@ const Sidebar = ({ onLogout, boards, fetchBoards, onSelectBoard, selectedBoardId
   const [showCreate, setShowCreate] = useState(false);
   const [newBoard, setNewBoard] = useState({ name: "", description: "" });
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const navigate = useNavigate();
 
   // Tạo board mới
   const handleCreateBoard = async (e) => {
@@ -68,7 +70,7 @@ const Sidebar = ({ onLogout, boards, fetchBoards, onSelectBoard, selectedBoardId
                     return (
                       <button
                         key={board.id}
-                        onClick={() => onSelectBoard?.(board.id)}
+                        onClick={() => navigate(`/board/${board.id}`)}
                         className={`block px-2 py-2 rounded text-sm w-full text-left transition-transform transform hover:-translate-y-1 hover:shadow-xl cursor-pointer border group
         ${isSelected ? "bg-blue-700 text-white font-semibold border-blue-200" : "hover:bg-blue-700 hover:border-blue-200 border-transparent"}`}
                       >

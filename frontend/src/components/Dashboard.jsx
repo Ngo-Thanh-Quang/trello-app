@@ -1,5 +1,7 @@
 import React from "react";
 import { useOutletContext } from "react-router";
+import Card from "../pages/Card";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const {
@@ -13,6 +15,7 @@ const Dashboard = () => {
   const [showDeleteModal, setShowDeleteModal] = React.useState(false);
   const [editBoardData, setEditBoardData] = React.useState({ id: '', name: '', description: '' });
   const [deleteBoardId, setDeleteBoardId] = React.useState(null);
+  const navigate = useNavigate();
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -26,7 +29,7 @@ const Dashboard = () => {
                 <div
                   key={board.id}
                   className="bg-white p-3 rounded-lg shadow-md transition-transform transform hover:-translate-y-1 hover:shadow-xl cursor-pointer border border-transparent hover:border-blue-400 group"
-                  onClick={() => onSelectBoard(board.id)}
+                  onClick={() => navigate(`/board/${board.id}`)}
                 >
                   <h3 className="font-bold text-lg text-blue-700 group-hover:text-blue-900 transition-colors mb-1 truncate">
                     {board.name}
@@ -137,17 +140,7 @@ const Dashboard = () => {
             </div>
           )}
           {selectedBoardId && (
-            <div className="absolute top-20 left-64 right-0 bottom-0 bg-white p-6 overflow-auto">
-              <button className="px-5 py-2 text-base bg-blue-400 hover:bg-blue-600 text-white rounded-lg font-semibold mb-4" onClick={() => onSelectBoard(null)}>&larr; Return Board List</button>
-              {/* Card  */}
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-2xl text-blue-700">Cards</h3>
-                <button className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold">+ Create Card</button>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                <div className="text-gray-400 italic">No cards yet.</div>
-              </div>
-            </div>
+            <Card/>
           )}
         </div>
       </main>
