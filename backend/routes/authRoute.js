@@ -6,5 +6,7 @@ router.post('/signup', authController.signUp);
 router.post('/signin', authController.signIn);
 router.post('/request-verification', authController.verifyEmail);
 router.post('/google-signin', authController.googleSignIn);
+router.get("/invite-list", authController.getUsersToInvite);
+
 
 module.exports = router;

@@ -2,6 +2,8 @@ const bcrypt = require("bcrypt");
 const { emailVerification } = require("../utils/email");
 const { getUser, createUser } = require("../models/userModel");
 const { generateToken } = require("../utils/token");
+const db = require("../firebase");
+
 
 
 const verificationCodes = new Map();
@@ -101,5 +103,22 @@ exports.googleSignIn = async (req, res) => {
   } catch (error) {
     console.error("Google login error:", error);
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+exports.getUsersToInvite = async (req, res) => {
+  try {
+    const snapshot = await db.collection("user").get();
+    if (snapshot.empty) return res.status(200).json([]);
+
+    const users = snapshot.docs
+      .map((doc) => doc.data())
+      .filter(
+        (u) => u.email && u.email.trim() && u.email.trim() !== req.userEmail?.trim()
+      );
+
+    return res.status(200).json(users);
+  } catch (error) {
+    console.error("Loi khi lay danh sach member:", error);
+    return res.status(500).json({ message: "loi 500 fetch member" });
   }
 };

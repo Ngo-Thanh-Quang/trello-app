@@ -8,6 +8,7 @@ const Dashboard = () => {
     onSelectBoard,
     handleEditBoard,
     handleDeleteBoard,
+    allUsers = [],
   } = useOutletContext() || {};
   const [showEditModal, setShowEditModal] = React.useState(false);
   const [showDeleteModal, setShowDeleteModal] = React.useState(false);
@@ -16,12 +17,12 @@ const Dashboard = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <main className="flex-1 ml-8 flex flex-col pt-10 min-h-screen">
+      <main className="flex-1 px-4 sm:px-6 md:px-10 pt-10 min-h-screen">
         <div className="flex-1 p-2 sm:p-3 md:p-4 lg:p-5 xl:p-6">
           <h2 className="text-2xl font-bold mb-4">Your Boards</h2>
           {/* Bdanh sach */}
           {!selectedBoardId && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 px-2">
               {boards.map((board) => (
                 <div
                   key={board.id}
@@ -35,8 +36,22 @@ const Dashboard = () => {
                     {board.description || <span className="italic text-gray-400">No description</span>}
                   </p>
                   <p className="text-gray-600 group-hover:text-gray-800 transition-colors min-h-[32px]">
-                     <span className="italic text-gray-400">Members: No one</span>
+                    {Array.isArray(board.members) && board.members.length > 0 ? (
+                      <span className="italic text-gray-500">
+                        Members:{" "}
+                        {board.members.map(email => {
+                          const user = allUsers.find(user => user.email === email);
+                          console.log("Mapping member email:", email, "->", user?.name || email);
+                          console.log("All users in Dashboard:", allUsers);
+                          return user ? user.name : email;
+                        }).join(", ")}
+                      </span>
+                    ) : (
+                      <span className="italic text-gray-400">Members: No one</span>
+                    )}
                   </p>
+
+
 
                   <div
                     className="mt-4 flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -70,7 +85,7 @@ const Dashboard = () => {
           {showEditModal && (
             <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
               <form
-                className="bg-white p-6 rounded shadow-md w-96 text-gray-800"
+                className="bg-white p-6 rounded shadow-md w-full max-w-md mx-4 text-gray-800"
                 onSubmit={e => {
                   e.preventDefault();
                   handleEditBoard(editBoardData.id, { name: editBoardData.name, description: editBoardData.description });
@@ -113,7 +128,7 @@ const Dashboard = () => {
           {/* modal xoa bang */}
           {showDeleteModal && (
             <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
-              <div className="bg-white p-6 rounded shadow-md w-96 text-gray-800">
+              <div className="bg-white p-6 rounded shadow-md w-full max-w-md mx-4 text-gray-800">
                 <h2 className="text-xl font-bold mb-4">Delete Board</h2>
                 <p className="mb-4">Bạn muốn xóa <span className="font-semibold text-red-500">{boards.find(b => b.id === deleteBoardId)?.name}</span> không?</p>
                 <div className="flex justify-end gap-2">
@@ -152,6 +167,7 @@ const Dashboard = () => {
         </div>
       </main>
     </div>
+
   );
 };
 

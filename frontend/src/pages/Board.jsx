@@ -9,6 +9,7 @@ const BoardPage = ({ token }) => {
   const [boards, setBoards] = useState([]);
   const [selectedBoardId, setSelectedBoardId] = useState(null);
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const [allUsers, setAllUsers] = useState([]);
 
   // danh sach bang
   const fetchBoards = async () => {
@@ -71,6 +72,22 @@ const BoardPage = ({ token }) => {
   useEffect(() => {
     fetchBoards();
   }, [token]);
+  
+
+  useEffect(() => {
+  const fetchAllUsers = async () => {
+    try {
+      const token = localStorage.getItem("tokenLogin");
+      const res = await axios.get(`${backendUrl}/auth/invite-list`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setAllUsers(res.data);
+    } catch (err) {
+      console.error("Failed to fetch users", err);
+    }
+  };
+  fetchAllUsers();
+}, []);
 
   return (
     <>
@@ -90,11 +107,14 @@ const BoardPage = ({ token }) => {
             onSelectBoard: setSelectedBoardId,
             handleEditBoard,
             handleDeleteBoard,
+            allUsers,
           }}
         />
       </div>
     </>
   );
 };
+
+
 
 export default BoardPage;

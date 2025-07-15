@@ -2,23 +2,31 @@
 
 // Tao bang moi
 exports.createBoard = async (req, res) => {
-  const { name, description } = req.body;
+  const { name, description, members = [] } = req.body; 
+
   if (!name) {
     return res.status(400).json({ message: "Board name is required" });
   }
+
   const board = {
     name,
     description: description || "",
     userEmail: req.userEmail,
+    members: [req.userEmail, ...members], 
   };
+
   try {
     const newBoard = await boardsModel.createBoard(board);
-    return res.status(201).json(newBoard);
+    return res.status(201).json({
+      board: newBoard,
+      message: "Board created and members added.",
+    });
   } catch (error) {
     console.error("Loi:", error);
     return res.status(500).json({ message: "Check Email Of Users" });
   }
 };
+
 
 // Lay tat ca board cua user
 exports.getBoards = async (req, res) => {

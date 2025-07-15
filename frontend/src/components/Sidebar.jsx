@@ -10,9 +10,11 @@ const Sidebar = ({ onLogout, boards, fetchBoards, onSelectBoard, selectedBoardId
   const [showAllBoards, setShowAllBoards] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [newBoard, setNewBoard] = useState({ name: "", description: "" });
+  const [members, setMembers] = useState([]);
+  const [selectedMembers, setSelectedMembers] = useState([]);
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-  // Tạo board mới
+  //Tao bang 
   const handleCreateBoard = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("tokenLogin");
@@ -20,13 +22,17 @@ const Sidebar = ({ onLogout, boards, fetchBoards, onSelectBoard, selectedBoardId
     try {
       const res = await axios.post(
         `${backendUrl}/boards`,
-        newBoard,
+        {
+        ...newBoard,
+        members: selectedMembers,
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       toast.success("Create new board successfully!");
       setShowCreate(false);
       setNewBoard({ name: "", description: "" });
+      setSelectedMembers([]);
       fetchBoards();
     } catch (err) {
       console.error("Error creating board:", err);
@@ -34,6 +40,22 @@ const Sidebar = ({ onLogout, boards, fetchBoards, onSelectBoard, selectedBoardId
     }
   };
 
+  const fetchUsersToInvite = async () => {
+    const token = localStorage.getItem("tokenLogin");
+    try {
+      const res = await axios.get(`${backendUrl}/auth/invite-list`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setMembers(res.data);
+    } catch (err) {
+      console.error("Failed to fetch members:", err);
+    }
+  };
+
+  const openCreateModal = () => {
+    fetchUsersToInvite();
+    setShowCreate(true);
+  };
   return (
     <aside className="h-screen w-64 bg-gradient-to-b from-blue-500 to-blue-800 text-white flex flex-col shadow-lg fixed top-20 left-0 z-40">
 
@@ -54,7 +76,7 @@ const Sidebar = ({ onLogout, boards, fetchBoards, onSelectBoard, selectedBoardId
             <div className="ml-8 mt-2">
               <button
                 className="flex items-center gap-2 px-2 py-2 text-sm text-blue-100 hover:text-white hover:bg-blue-700 rounded w-full mb-2"
-                onClick={() => setShowCreate(true)}
+                onClick={openCreateModal}
               >
                 <FaPlus /> Create Board
               </button>
@@ -102,16 +124,16 @@ const Sidebar = ({ onLogout, boards, fetchBoards, onSelectBoard, selectedBoardId
           )}
         </div>
         <div className="flex items-center gap-3 px-4 py-3 rounded-lg w-full transition-all hover:bg-white/10">
-          <Link className="flex gap-3 rounded-lg w-full" to="/profile"><FaUser/> Profile</Link>
+          <Link className="flex gap-3 rounded-lg w-full" to="/profile"><FaUser /> Profile</Link>
         </div>
       </nav>
 
-      
-      {/* Modal tạo board */}
+
+      {/* Modal tao bang */}
       {showCreate && (
         <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
           <form
-            className="bg-white p-6 rounded shadow-md w-96 text-gray-800"
+            className="bg-white p-6 rounded shadow-md w-full max-w-md mx-4 text-gray-800"
             onSubmit={handleCreateBoard}
           >
             <h2 className="text-xl font-bold mb-4">Create Board</h2>
@@ -128,6 +150,32 @@ const Sidebar = ({ onLogout, boards, fetchBoards, onSelectBoard, selectedBoardId
               value={newBoard.description}
               onChange={(e) => setNewBoard({ ...newBoard, description: e.target.value })}
             />
+            <div className="mb-4">
+              <label className="font-semibold mb-2 block">Invite Members:</label>
+              <div className="max-h-40 overflow-y-auto border p-2 rounded">
+                {members.length === 0 && (
+                  <div className="text-sm italic text-gray-400">No users to invite</div>
+                )}
+                {members.map((user) => (
+                  <label key={user.email} className="flex items-center gap-2 mb-1 text-sm">
+                    <input
+                      type="checkbox"
+                      value={user.email}
+                      onChange={(e) => {
+                        const email = e.target.value;
+                        setSelectedMembers((prev) =>
+                          e.target.checked
+                            ? [...prev, email]
+                            : prev.filter((m) => m !== email)
+                        );
+                      }}
+                    />
+                    {user.name || user.email}
+                  </label>
+                ))}
+              </div>
+            </div>
+
             <div className="flex justify-end gap-2">
               <button
                 type="button"
