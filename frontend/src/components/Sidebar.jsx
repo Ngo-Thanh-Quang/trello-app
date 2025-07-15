@@ -10,6 +10,7 @@ const Sidebar = ({ onLogout, boards, fetchBoards, onSelectBoard, selectedBoardId
   const [showAllBoards, setShowAllBoards] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [newBoard, setNewBoard] = useState({ name: "", description: "" });
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   // Tạo board mới
   const handleCreateBoard = async (e) => {
@@ -18,7 +19,7 @@ const Sidebar = ({ onLogout, boards, fetchBoards, onSelectBoard, selectedBoardId
 
     try {
       const res = await axios.post(
-        "http://localhost:4000/boards",
+        `${backendUrl}/boards`,
         newBoard,
         { headers: { Authorization: `Bearer ${token}` } }
       );
