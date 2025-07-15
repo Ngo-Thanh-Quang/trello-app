@@ -14,6 +14,7 @@ exports.authToken = (req, res, next) => {
     }
 
     req.user = user;
+    req.userEmail = user.email;
     next();
   });
 };
