@@ -24,11 +24,13 @@ const Home = () => {
     }
   };
 
-   useEffect(() => {
-    if (isLogged) {
+  useEffect(() => {
+    const tokenLogin = localStorage.getItem("tokenLogin");
+    if (tokenLogin) {
+      setIsLogged(true);
       fetchBoards();
     }
-  }, [isLogged, fetchBoards]);
+  }, []);
 
   // edit bang
   const handleEditBoard = async (boardId, updatedData) => {
