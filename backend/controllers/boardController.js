@@ -58,7 +58,10 @@ exports.updateBoard = async (req, res) => {
     if (!board || board.userEmail !== req.userEmail) {
       return res.status(404).json({ message: "Board not found or unauthorized" });
     }
-    
+    const updatedBoard = await boardsModel.updateBoard(id, { name, description });
+
+    return res.status(200).json(updatedBoard);
+
   } catch (error) {
     console.error("Error updating board:", error);
     return res.status(500).json({ message: "Failed to update board" });
