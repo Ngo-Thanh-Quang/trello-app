@@ -12,6 +12,7 @@ const BoardPage = ({ token }) => {
 
   // danh sach bang
   const fetchBoards = async () => {
+        const token = localStorage.getItem("tokenLogin");
     if (!token) return;
     try {
       const res = await axios.get(`${backendUrl}/boards`, {
