@@ -20,7 +20,7 @@ const Navbar = () => {
               </div>
 
         <div className="gap-5 text-white font-semibold">
-          <button onClick={handleLogout} className="cursor-pointer hidden sm:block">Log Out</button>
+          <button onClick={handleLogout} className="px-4 py-2 bg-white text-blue-700 rounded-md font-bold hover:bg-gray-300 transition cursor-pointer hidden sm:block">Log Out</button>
           <button onClick={handleLogout} className="cursor-pointer block sm:hidden text-2xl">
             <FaRegArrowAltCircleRight />
           </button>
