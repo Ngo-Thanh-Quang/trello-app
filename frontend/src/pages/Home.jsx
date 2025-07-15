@@ -2,19 +2,15 @@ import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Login from "./Login";
 import Sidebar from "../components/Sidebar";
-
-
 import axios from "axios";
 import { Outlet } from "react-router";
-
 
 const Home = () => {
   const [isLogged, setIsLogged] = useState(false);
   const [boards, setBoards] = useState([]);
-  const [successMsg, setSuccessMsg] = useState("");
   const [selectedBoardId, setSelectedBoardId] = useState(null);
-  
 
+  // show bang
   const fetchBoards = async () => {
     const token = localStorage.getItem("tokenLogin");
     if (!token) return;
@@ -28,30 +24,69 @@ const Home = () => {
     }
   };
 
-  const showSuccess = (msg) => {
-    setSuccessMsg(msg);
-    setTimeout(() => setSuccessMsg(""), 2000);
-  };
-
-  useEffect(() => {
-    const tokenLogin = localStorage.getItem("tokenLogin");
-    if (tokenLogin) {
-      setIsLogged(true);
+   useEffect(() => {
+    if (isLogged) {
       fetchBoards();
     }
-  }, []);
+  }, [isLogged, fetchBoards]);
+
+  // edit bang
+  const handleEditBoard = async (boardId, updatedData) => {
+    const token = localStorage.getItem("tokenLogin");
+    if (!token) return;
+    try {
+      const res = await axios.put(`http://localhost:4000/boards/${boardId}`, updatedData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.status === 200) {
+        await fetchBoards();
+      } else {
+        console.error("Edit board failed: ", res.data);
+      }
+    } catch (err) {
+      console.error("Failed to edit board", err);
+    }
+  };
+
+  // xoa bang
+  const handleDeleteBoard = async (boardId) => {
+    const token = localStorage.getItem("tokenLogin");
+    if (!token) return;
+    try {
+      const res = await axios.delete(`http://localhost:4000/boards/${boardId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.status === 204) {
+        await fetchBoards();
+      } else {
+        console.error("Delete board failed: ", res.data);
+      }
+    } catch (err) {
+      console.error("Failed to delete board", err);
+    }
+  };
 
   return isLogged ? (
     <div>
       <Navbar />
-      {successMsg && (
-        <div className="fixed top-10 left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded shadow-lg z-50 animate-fade-in">
-          {successMsg}
-        </div>
-      )}
-      <Sidebar boards={boards} fetchBoards={fetchBoards} showSuccess={showSuccess} onSelectBoard={setSelectedBoardId} selectedBoardId={selectedBoardId} />
+      <Sidebar
+        boards={boards}
+        fetchBoards={fetchBoards}
+        onSelectBoard={setSelectedBoardId}
+        selectedBoardId={selectedBoardId}
+        handleEditBoard={handleEditBoard}
+        handleDeleteBoard={handleDeleteBoard}
+      />
       <div className="ml-64 pt-20">
-        <Outlet context={{ boards, fetchBoards, selectedBoardId, onSelectBoard: setSelectedBoardId }} />
+        <Outlet
+          context={{
+            boards,
+            selectedBoardId,
+            onSelectBoard: setSelectedBoardId,
+            handleEditBoard,
+            handleDeleteBoard,
+          }}
+        />
       </div>
     </div>
   ) : (
