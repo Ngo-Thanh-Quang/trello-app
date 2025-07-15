@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const boardController = require("../controllers/boardController");
-const authenticateToken = require("../middleware/authMiddleware");
+const { authToken } = require("../middlewares/auth");
 
-router.post("/", authenticateToken, boardController.createBoard);
-router.get("/", authenticateToken, boardController.getBoards);
-router.get("/:id", authenticateToken, boardController.getBoardById);
+router.post("/", authToken , boardController.createBoard);
+router.get("/", authToken , boardController.getBoards);
+router.get("/:id", authToken , boardController.getBoardById);
 // updateBoard, 
 // deleteBoard, 
 

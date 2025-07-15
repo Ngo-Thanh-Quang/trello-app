@@ -153,7 +153,9 @@ const handleUpdate = async () => {
           </div>
         </div>
       ) : (
-        <p>Loading...</p>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="loader border-t-4 border-blue-500 border-solid rounded-full h-10 w-10 animate-spin"></div>
+        </div>
       )}
     </div>
   );

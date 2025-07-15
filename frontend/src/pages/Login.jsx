@@ -3,18 +3,22 @@ import axios from "axios";
 import gg_img from "../assets/gg_img.webp";
 import { toast } from "react-toastify";
 import { useGoogleLogin } from "@react-oauth/google";
+import { useNavigate } from "react-router-dom";
 
-const Login = () => {
+const Login = ({ setIsLogged }) => {
   const [state, setState] = useState("Login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showOtp, setShowOtp] = useState(false);
   const [otp, setOtp] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     if (state === "Login") {
       try {
@@ -23,11 +27,9 @@ const Login = () => {
           password,
         });
         if (res.status === 200) {
-          toast.success(res.data.message || "Login successful!");
           localStorage.setItem("tokenLogin", res.data.token);
-          setTimeout(() => {
-            window.location.reload();
-          }, 1500);
+          setIsLogged(true);
+          navigate("/");
         }
       } catch (error) {
         if (error.response) {
@@ -36,6 +38,8 @@ const Login = () => {
           toast.error("Server error!");
         }
         console.error("Login failed:", error);
+      } finally {
+        setLoading(false);
       }
     } else if (state === "Register") {
       try {
@@ -49,12 +53,16 @@ const Login = () => {
         }
       } catch (error) {
         console.error("OTP error:", error);
+      } finally {
+        setLoading(false);
       }
     }
   };
 
   const handleOtpSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+
     try {
       const res = await axios.post(`${backendUrl}/auth/signup`, {
         email,
@@ -63,11 +71,9 @@ const Login = () => {
         otp,
       });
       if (res.status === 201) {
-        toast.success("Account created successfully!");
         localStorage.setItem("tokenLogin", res.data.token);
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
+        setIsLogged(true);
+        navigate("/");
       }
     } catch (error) {
       if (error.response) {
@@ -76,12 +82,15 @@ const Login = () => {
         toast.error("Server error!");
       }
       console.error("Signup error:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleGoogleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       const { access_token } = tokenResponse;
+      setLoading(true)
       try {
         const profileRes = await axios.get(
           "https://www.googleapis.com/oauth2/v3/userinfo",
@@ -99,10 +108,13 @@ const Login = () => {
         });
         localStorage.setItem("tokenLogin", res.data.token);
         toast.success("Login with Google successful!");
-        setTimeout(() => window.location.reload(), 1500);
+        setIsLogged(true);
+        navigate("/");
       } catch (error) {
         toast.error("Google login failed!");
         console.error(error);
+      } finally {
+        setLoading(false);
       }
     },
     onError: () => toast.error("Google login error"),
@@ -112,6 +124,12 @@ const Login = () => {
   return (
     <div>
       <h1 className="text-3xl font-bold text-center sm:mt-10 mt-20">{state}</h1>
+      {loading && (
+        <div className="flex justify-center mt-5">
+          <div className="loader border-t-4 border-blue-500 border-solid rounded-full h-10 w-10 animate-spin"></div>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="max-w-md sm:mx-auto mx-5 mt-10">
         {state === "Register" && (
           <div className="mb-3">
@@ -183,10 +201,15 @@ const Login = () => {
 
         <div className="flex items-center justify-between mb-6">
           <button
-            className="bg-blue-500 hover:bg-blue-700 w-full text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer"
+            disabled={loading}
+            className={`${
+              loading
+                ? "bg-blue-300 cursor-not-allowed"
+                : "bg-blue-500 hover:bg-blue-700"
+            } w-full text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline`}
             type="submit"
           >
-            {state === "Login" ? "Sign In" : "Sign Up"}
+            {loading ? "Loading..." : state === "Login" ? "Sign In" : "Sign Up"}
           </button>
         </div>
         <div className="mb-6">

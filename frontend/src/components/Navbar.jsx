@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Outlet, Link } from "react-router-dom";
-import { FaThLarge } from "react-icons/fa";
+import { FaThLarge, FaRegArrowAltCircleRight } from "react-icons/fa";
 
 
 const Navbar = () => {
@@ -19,43 +19,13 @@ const Navbar = () => {
                 <Link to="/">Trello App</Link>
               </div>
 
-        <div className="gap-5 text-white font-semibold hidden sm:flex">
-          <Link to="/">Home</Link>
-          <Link to="/card">Card</Link>
-          <Link to="/profile">Profile</Link>
-          <button onClick={handleLogout} className="cursor-pointer">Log Out</button>
-        </div>
-
-        <div className="flex sm:hidden">
-          <button className="text-white font-semibold">
-            {isOpen ? (
-              <i
-                className="fa-solid text-2xl fa-xmark"
-                onClick={() => setIsOpen(!isOpen)}
-              ></i>
-            ) : (
-              <i
-                className="fa-solid text-2xl fa-bars"
-                onClick={() => setIsOpen(!isOpen)}
-              ></i>
-            )}
+        <div className="gap-5 text-white font-semibold">
+          <button onClick={handleLogout} className="cursor-pointer hidden sm:block">Log Out</button>
+          <button onClick={handleLogout} className="cursor-pointer block sm:hidden text-2xl">
+            <FaRegArrowAltCircleRight />
           </button>
         </div>
-        <div
-          className={`absolute top-20 right-0 bg-blue-500 w-full sm:w-auto sm:static sm:hidden sm:items-center sm:gap-5 text-white font-semibold ${
-            isOpen ? "block" : "hidden"
-          }`}
-        >
-          <div className="h-10 content-center text-center border-b border-blue-50">
-            <Link to="/">Home</Link>
-          </div>
-          <div className="h-10 content-center text-center border-b border-blue-50">
-            <Link to="/profile">Profile</Link>
-          </div>
-          <div className="h-10 content-center text-center border-b border-blue-50">
-            <Link to="/card">Card</Link>
-          </div>
-        </div>
+
       </div>
       {/* <Outlet /> */}
     </>

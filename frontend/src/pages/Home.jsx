@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Login from "./Login";
 import Sidebar from "../components/Sidebar";
-import Dashboard from "../components/Dashboard";
 
 
 import axios from "axios";
+import { Outlet } from "react-router";
 
 
 const Home = () => {
@@ -51,11 +51,11 @@ const Home = () => {
       )}
       <Sidebar boards={boards} fetchBoards={fetchBoards} showSuccess={showSuccess} onSelectBoard={setSelectedBoardId} selectedBoardId={selectedBoardId} />
       <div className="ml-64 pt-20">
-        <Dashboard boards={boards} fetchBoards={fetchBoards} selectedBoardId={selectedBoardId} onSelectBoard={setSelectedBoardId} />
+        <Outlet context={{ boards, fetchBoards, selectedBoardId, onSelectBoard: setSelectedBoardId }} />
       </div>
     </div>
   ) : (
-    <Login />
+    <Login setIsLogged={setIsLogged} />
   );
 };
 
