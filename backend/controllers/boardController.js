@@ -1,4 +1,4 @@
-const boardsModel = require("../models/boardModel");
+
 
 // Tao bang moi
 exports.createBoard = async (req, res) => {
@@ -44,5 +44,45 @@ exports.getBoardById = async (req, res) => {
     return res.status(500).json({ message: "Failed to get board" });
   }
 };
+
+
+// chinh sua bang
+exports.updateBoard = async (req, res) => {
+  const { name, description } = req.body;
+  const { id } = req.params;
+  if (!name) {
+    return res.status(400).json({ message: "Board name is required" });
+  }
+  try {
+    const board = await boardsModel.getBoardById(id);
+    if (!board || board.userEmail !== req.userEmail) {
+      return res.status(404).json({ message: "Board not found or unauthorized" });
+    }
+    const updatedBoard = await boardsModel.updateBoard(id, { name, description });
+
+    return res.status(200).json(updatedBoard);
+
+  } catch (error) {
+    console.error("Error updating board:", error);
+    return res.status(500).json({ message: "Failed to update board" });
+  }
+};
+
+// xoa bang
+exports.deleteBoard = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const board = await boardsModel.getBoardById(id);
+    if (!board || board.userEmail !== req.userEmail) {
+      return res.status(404).json({ message: "Board not found or unauthorized" });
+    }
+    await boardsModel.deleteBoard(id);
+    return res.status(204).send();
+  } catch (error) {
+    console.error("Error deleting board:", error);
+    return res.status(500).json({ message: "Failed to delete board" });
+  }
+};
+const boardsModel = require("../models/boardModel");
 
 

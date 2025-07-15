@@ -28,10 +28,22 @@ const getBoardById = async (id) => {
 };
 
 
+
+const updateBoard = async (id, data) => {
+  const docRef = boardsCollection.doc(id);
+  await docRef.update(data);
+  const updatedDoc = await docRef.get();
+  return { id: updatedDoc.id, ...updatedDoc.data() };
+};
+
+const deleteBoard = async (id) => {
+  await boardsCollection.doc(id).delete();
+};
+
 module.exports = {
   createBoard,
   getBoardsByUser,
   getBoardById,
-  // updateBoard, 
-  // deleteBoard, 
+  updateBoard,
+  deleteBoard,
 };
