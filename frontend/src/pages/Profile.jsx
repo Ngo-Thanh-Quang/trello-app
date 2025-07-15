@@ -9,6 +9,7 @@ const Profile = () => {
   const [updateName, setUpdateName] = useState("");
   const [input, setInput] = useState(false);
   const [avatar, setAvatar] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("tokenLogin");
@@ -35,70 +36,77 @@ const Profile = () => {
     fetchUser();
   }, []);
 
-const handleUpdate = async () => {
-  const token = localStorage.getItem("tokenLogin");
-  if (!token) {
-    toast.error("You need to be logged in to update your profile");
-    return;
-  }
+  const handleUpdate = async () => {
+    const token = localStorage.getItem("tokenLogin");
+    setLoading(true);
+    if (!token) {
+      toast.error("You need to be logged in to update your profile");
+      return;
+    }
 
-  let updated = false;
+    let updated = false;
 
-  try {
-    // Cập nhật tên
-    if (updateName !== user.name) {
-      const res = await axios.put(
-        `${backendUrl}/profile`,
-        { name: updateName },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+    try {
+      // Cập nhật tên
+      if (updateName !== user.name) {
+        const res = await axios.put(
+          `${backendUrl}/profile`,
+          { name: updateName },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (res.status === 200) {
+          setUser((prev) => ({ ...prev, name: updateName }));
+          updated = true;
         }
-      );
-      if (res.status === 200) {
-        setUser((prev) => ({ ...prev, name: updateName }));
-        updated = true;
       }
-    }
 
-    // Cập nhật avatar
-    if (avatar) {
-      const formData = new FormData();
-      formData.append("avatar", avatar);
+      // Cập nhật avatar
+      if (avatar) {
+        const formData = new FormData();
+        formData.append("avatar", avatar);
 
-      const res = await axios.put(
-        `${backendUrl}/profile/update-avatar`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
+        const res = await axios.put(
+          `${backendUrl}/profile/update-avatar`,
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+
+        if (res.status === 200) {
+          setUser((prev) => ({ ...prev, picture: res.data.picture }));
+          updated = true;
         }
-      );
-
-      if (res.status === 200) {
-        setUser((prev) => ({ ...prev, picture: res.data.picture }));
-        updated = true;
       }
-    }
 
-    if (updated) {
-      toast.success("Profile updated successfully!");
-      setEdit(false);
+      if (updated) {
+        toast.success("Profile updated successfully!");
+        setEdit(false);
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast.error("Failed to update profile");
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error("Error updating profile:", error);
-    toast.error("Failed to update profile");
-  }
-};
-
+  };
 
   return (
     <div>
       {user ? (
         <div className="flex flex-col items-center justify-center h-150 gap-4">
+          {loading && (
+            <div className="flex justify-center mt-5">
+              <div className="loader border-t-4 border-blue-500 border-solid rounded-full h-10 w-10 animate-spin"></div>
+            </div>
+          )}
           <img
             className="inline-block size-40 rounded-full ring-4 ring-white shadow-md"
             src={
@@ -132,10 +140,15 @@ const handleUpdate = async () => {
                   />
                 )}
                 <button
+                  disabled={loading}
                   onClick={handleUpdate}
-                  className="px-4 py-2 mt-5 bg-blue-600 text-white rounded-md font-bold cursor-pointer hover:bg-blue-700 transition"
+                  className={
+                    loading
+                      ? "px-4 py-2 mt-5 bg-blue-300 cursor-not-allowed text-white rounded-md font-bold"
+                      : "px-4 py-2 mt-5 bg-blue-600 text-white rounded-md font-bold cursor-pointer hover:bg-blue-700 transition"
+                  }
                 >
-                  Save
+                  {loading ? "Loading..." : "Save"}
                 </button>
               </div>
             ) : (
