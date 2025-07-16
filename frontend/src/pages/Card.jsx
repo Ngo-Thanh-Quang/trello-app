@@ -415,7 +415,6 @@ const Card = () => {
                             }}
                           >
                             <FaEdit /> Edit
-                            <FaEdit /> Edit
                           </button>
                           <button
                             className="flex gap-2 items-center w-full cursor-pointer text-left px-4 py-2 hover:bg-gray-100"
@@ -424,7 +423,6 @@ const Card = () => {
                               setSelectCard(null);
                             }}
                           >
-                            <FaTrashAlt /> Delete
                             <FaTrashAlt /> Delete
                           </button>
                         </div>

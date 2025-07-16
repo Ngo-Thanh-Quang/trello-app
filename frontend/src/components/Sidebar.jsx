@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { FaTrello, FaUser, FaSignOutAlt, FaThLarge, FaPlus, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { FaTrello, FaUser, FaPlus, FaChevronDown, FaChevronUp, FaBell } from "react-icons/fa";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
@@ -43,7 +43,7 @@ const Sidebar = ({ onLogout, boards, fetchBoards, onSelectBoard, selectedBoardId
       <nav className="flex-1 px-4 py-6">
         <div>
           <button
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg w-full transition-all ${showBoards ? "bg-white/20 font-semibold" : "hover:bg-white/10"
+            className={`flex items-center gap-3 font-semibold px-4 py-3 rounded-lg w-full transition-all ${showBoards ? "bg-white/20 font-semibold" : "hover:bg-white/10"
               }`}
             onClick={() => setShowBoards((v) => !v)}
           >
@@ -83,7 +83,7 @@ const Sidebar = ({ onLogout, boards, fetchBoards, onSelectBoard, selectedBoardId
 
                   {boards.length > 3 && (
                     <button
-                      className="flex items-center gap-2 px-2 py-2 text-sm text-blue-100 hover:text-white hover:bg-blue-700 border border-transparent hover:border-amber-100 rounded w-full mb-2"
+                      className="flex items-center gap-2 px-2 py-2 text-blue-100 hover:text-white hover:bg-blue-700 border border-transparent hover:border-amber-100 rounded w-full mb-2"
                       onClick={() => setShowAllBoards((prev) => !prev)}
                     >
                       {showAllBoards ? (
@@ -103,15 +103,11 @@ const Sidebar = ({ onLogout, boards, fetchBoards, onSelectBoard, selectedBoardId
             </div>
           )}
         </div>
-        <div className="px-4 pb-6">
-          <button
-            className="flex items-center gap-3 px-4 py-3 rounded-lg w-full transition-all hover:bg-white/10"
-            onClick={() => navigate('/notifications')}
-          >
-            Notify
-          </button>
+
+        <div className="flex font-semibold items-center gap-3 px-4 py-3 rounded-lg w-full transition-all hover:bg-white/10">
+          <Link className="flex gap-3 rounded-lg w-full" to="/notifications"><FaBell/> Notify</Link>
         </div>
-        <div className="flex items-center gap-3 px-4 py-3 rounded-lg w-full transition-all hover:bg-white/10">
+        <div className="flex font-semibold items-center gap-3 px-4 py-3 rounded-lg w-full transition-all hover:bg-white/10">
           <Link className="flex gap-3 rounded-lg w-full" to="/profile"><FaUser /> Profile</Link>
         </div>
       </nav>
