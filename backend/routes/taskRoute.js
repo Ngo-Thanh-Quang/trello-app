@@ -7,5 +7,6 @@ router.post("/:cardId", authToken, taskController.createTask);
 router.get("/:cardId", authToken, taskController.getTasksByCardId);
 router.delete("/delete/:taskId", authToken, taskController.deleteTask);
 router.put("/update/:taskId", authToken, taskController.updateTask);
+router.put("/update-card/:taskId", authToken, taskController.updateTaskMove);
 
 module.exports = router;

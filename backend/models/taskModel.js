@@ -33,3 +33,9 @@ exports.updateTask = async (taskId, title, description, status) => {
   });
 };
 
+exports.updateTaskMove = async (taskId, cardId) => {
+  const taskRef = tasksCollection.doc(taskId);
+  await taskRef.update({ cardId });
+};
+
+

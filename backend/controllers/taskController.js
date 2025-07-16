@@ -50,5 +50,18 @@ exports.updateTask = async (req, res) => {
   }
 };
 
+exports.updateTaskMove = async (req, res) => {
+  const { taskId } = req.params;
+  const { cardId } = req.body;
+
+  if (!cardId) return res.status(400).json({ message: "cardId is required" });
+
+  try {
+    await taskModel.updateTaskMove(taskId, cardId);
+    return res.status(200).json({ message: "Card ID updated successfully" });
+  } catch (err) {
+    return res.status(500).json({ message: "Failed to update card ID" });
+  }
+};
 
 

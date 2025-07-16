@@ -39,7 +39,7 @@ const Card = () => {
   const [allUsers, setAllUsers] = useState([]);
   const [selectedEmails, setSelectedEmails] = useState([]);
 
-  const onDragEnd = (result) => {
+  const onDragEnd = async (result) => {
     const { source, destination } = result;
 
     if (!destination) return;
@@ -59,10 +59,27 @@ const Card = () => {
     } else {
       const destTasks = [...destCard.tasks];
       destTasks.splice(destination.index, 0, movedTask);
-      const updatedCard = card.map((card) => {
-        if (card.id === sourceCard.id) return { ...card, tasks: sourceTasks };
-        if (card.id === destCard.id) return { ...card, tasks: destTasks };
-        return card;
+
+      try {
+        const token = localStorage.getItem("tokenLogin");
+        await axios.put(
+          `${backendUrl}/tasks/update-card/${movedTask.id}`,
+          { cardId: destination.droppableId },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+      } catch (err) {
+        console.error("Failed to update task's cardId:", err);
+      }
+
+      // cập nhật UI local state
+      const updatedCard = card.map((c) => {
+        if (c.id === sourceCard.id) return { ...c, tasks: sourceTasks };
+        if (c.id === destCard.id) return { ...c, tasks: destTasks };
+        return c;
       });
       setCard(updatedCard);
     }
@@ -177,35 +194,41 @@ const Card = () => {
   };
 
   const updateTask = async () => {
-  if (!taskTitle) return;
-  const token = localStorage.getItem("tokenLogin");
+    if (!taskTitle) return;
+    const token = localStorage.getItem("tokenLogin");
 
-  try {
-    await axios.put(
-      `${backendUrl}/tasks/update/${taskId}`,
-      { title: taskTitle, description: taskDescription, status: taskStatus },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    try {
+      await axios.put(
+        `${backendUrl}/tasks/update/${taskId}`,
+        { title: taskTitle, description: taskDescription, status: taskStatus },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-    const updatedCard = card.map((c) => ({
-      ...c,
-      tasks: c.tasks.map((t) =>
-        t.id === taskId ? { ...t, title: taskTitle, description: taskDescription, status: taskStatus } : t
-      ),
-    }));
-    setCard(updatedCard);
+      const updatedCard = card.map((c) => ({
+        ...c,
+        tasks: c.tasks.map((t) =>
+          t.id === taskId
+            ? {
+                ...t,
+                title: taskTitle,
+                description: taskDescription,
+                status: taskStatus,
+              }
+            : t
+        ),
+      }));
+      setCard(updatedCard);
 
-    toast.success("Task updated successfully");
-    setEditTask(false);
-    setTaskId(null);
-    setTaskTitle("");
-    setTaskDescription("");
-  } catch (err) {
-    toast.error("Failed to update task");
-    console.error("Update task error:", err);
-  }
-};
-
+      toast.success("Task updated successfully");
+      setEditTask(false);
+      setTaskId(null);
+      setTaskTitle("");
+      setTaskDescription("");
+    } catch (err) {
+      toast.error("Failed to update task");
+      console.error("Update task error:", err);
+    }
+  };
 
   useEffect(() => {
     const fetchBoardAndCards = async () => {
@@ -307,23 +330,37 @@ const Card = () => {
                     >
                       <i className="fa-solid fa-xmark"></i>
                     </div>
-                    <h2 className="text-xl font-bold mb-4 text-center">Invite Member</h2>
+                    <h2 className="text-xl font-bold mb-4 text-center">
+                      Invite Member
+                    </h2>
                     <div className="mb-4">
-                      <div className="font-semibold mb-2">Chọn email để mời:</div>
+                      <div className="font-semibold mb-2">
+                        Chọn email để mời:
+                      </div>
                       <div className="max-h-40 overflow-y-auto border rounded p-2">
                         {allUsers.length === 0 ? (
                           <div>Không có user nào để mời.</div>
                         ) : (
                           allUsers.map((email) => (
-                            <label key={email} className="flex items-center gap-2 mb-1">
+                            <label
+                              key={email}
+                              className="flex items-center gap-2 mb-1"
+                            >
                               <input
                                 type="checkbox"
                                 checked={selectedEmails.includes(email)}
                                 onChange={(e) => {
                                   if (e.target.checked) {
-                                    setSelectedEmails([...selectedEmails, email]);
+                                    setSelectedEmails([
+                                      ...selectedEmails,
+                                      email,
+                                    ]);
                                   } else {
-                                    setSelectedEmails(selectedEmails.filter((em) => em !== email));
+                                    setSelectedEmails(
+                                      selectedEmails.filter(
+                                        (em) => em !== email
+                                      )
+                                    );
                                   }
                                 }}
                               />
@@ -338,17 +375,21 @@ const Card = () => {
                         if (selectedEmails.length === 0) return;
                         try {
                           const token = localStorage.getItem("tokenLogin");
-                          await Promise.all(selectedEmails.map(email =>
-                            axios.post(
-                              `${backendUrl}/boards/${boardId}/invite`,
-                              {
-                                member_id: Date.now().toString(),
-                                email_member: email,
-                                status: "pending",
-                              },
-                              { headers: { Authorization: `Bearer ${token}` } }
+                          await Promise.all(
+                            selectedEmails.map((email) =>
+                              axios.post(
+                                `${backendUrl}/boards/${boardId}/invite`,
+                                {
+                                  member_id: Date.now().toString(),
+                                  email_member: email,
+                                  status: "pending",
+                                },
+                                {
+                                  headers: { Authorization: `Bearer ${token}` },
+                                }
+                              )
                             )
-                          ));
+                          );
                           setShowInvite(false);
                           setSelectedEmails([]);
                           alert("Đã gửi lời mời thành công!");
