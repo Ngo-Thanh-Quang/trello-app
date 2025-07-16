@@ -103,12 +103,20 @@ const Sidebar = ({ onLogout, boards, fetchBoards, onSelectBoard, selectedBoardId
             </div>
           )}
         </div>
+        <div className="px-4 pb-6">
+          <button
+            className="flex items-center gap-3 px-4 py-3 rounded-lg w-full transition-all hover:bg-white/10"
+            onClick={() => navigate('/notifications')}
+          >
+            Notify
+          </button>
+        </div>
         <div className="flex items-center gap-3 px-4 py-3 rounded-lg w-full transition-all hover:bg-white/10">
-          <Link className="flex gap-3 rounded-lg w-full" to="/profile"><FaUser/> Profile</Link>
+          <Link className="flex gap-3 rounded-lg w-full" to="/profile"><FaUser /> Profile</Link>
         </div>
       </nav>
 
-      
+
       {/* Modal tạo board */}
       {showCreate && (
         <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">

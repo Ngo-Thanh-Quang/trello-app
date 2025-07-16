@@ -17,6 +17,10 @@ const Card = () => {
   const [edit, setEdit] = useState(false);
   const [selectCard, setSelectCard] = useState(null);
   const [cardTitle, setCardTitle] = useState("");
+  const [showInvite, setShowInvite] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [allUsers, setAllUsers] = useState([]);
+  const [selectedEmails, setSelectedEmails] = useState([]);
 
   const onDragEnd = (result) => {
     const { source, destination } = result;
@@ -135,6 +139,20 @@ const Card = () => {
     };
 
     fetchBoardAndCards();
+
+    const fetchUsers = async () => {
+      try {
+        const token = localStorage.getItem("tokenLogin");
+        const res = await axios.get(`${backendUrl}/authuser/users`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setAllUsers(res.data);
+      } catch (err) {
+        setAllUsers([]);
+      }
+    };
+    fetchUsers();
+
     const handleClose = (e) => {
       if (!e.target.closest(".close")) {
         setSelectCard(null);
@@ -169,8 +187,79 @@ const Card = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 <div className="text-gray-600 italic">{board.description}</div>
               </div>
+              {showInvite && (
+                <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-20">
+                  <div className="bg-white p-6 rounded-lg shadow-lg w-96 relative">
+                    <div
+                      className="absolute flex right-3 top-2 cursor-pointer"
+                      onClick={() => setShowInvite(false)}
+                    >
+                      <i className="fa-solid fa-xmark"></i>
+                    </div>
+                    <h2 className="text-xl font-bold mb-4 text-center">Invite Member</h2>
+                    <div className="mb-4">
+                      <div className="font-semibold mb-2">Chọn email để mời:</div>
+                      <div className="max-h-40 overflow-y-auto border rounded p-2">
+                        {allUsers.length === 0 ? (
+                          <div>Không có user nào để mời.</div>
+                        ) : (
+                          allUsers.map((email) => (
+                            <label key={email} className="flex items-center gap-2 mb-1">
+                              <input
+                                type="checkbox"
+                                checked={selectedEmails.includes(email)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedEmails([...selectedEmails, email]);
+                                  } else {
+                                    setSelectedEmails(selectedEmails.filter((em) => em !== email));
+                                  }
+                                }}
+                              />
+                              <span>{email}</span>
+                            </label>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        if (selectedEmails.length === 0) return;
+                        try {
+                          const token = localStorage.getItem("tokenLogin");
+                          await Promise.all(selectedEmails.map(email =>
+                            axios.post(
+                              `${backendUrl}/boards/${boardId}/invite`,
+                              {
+                                member_id: Date.now().toString(),
+                                email_member: email,
+                                status: "pending",
+                              },
+                              { headers: { Authorization: `Bearer ${token}` } }
+                            )
+                          ));
+                          setShowInvite(false);
+                          setSelectedEmails([]);
+                          alert("Đã gửi lời mời thành công!");
+                        } catch (err) {
+                          alert("Gửi lời mời thất bại!");
+                        }
+                      }}
+                      className="bg-blue-500 text-white font-semibold cursor-pointer w-full py-2 rounded hover:bg-blue-600"
+                    >
+                      Send Invite
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
             <div className="flex -space-x-2 overflow-hidden">
+              <button
+                className="w-16 flex-shrink-0 gap-2 bg-gray-100 hover:bg-gray-200 rounded-lg shadow p-2 flex items-center justify-center cursor-pointer"
+                onClick={() => setShowInvite(true)}
+              >
+                <FaPlus />
+              </button>
               <img
                 className="inline-block size-8 rounded-full ring-2 ring-white cursor-pointer"
                 src="https://images.unsplash.com/photo-1491528323818-fdd1faba62cc?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
@@ -214,7 +303,7 @@ const Card = () => {
                               setEdit(true);
                             }}
                           >
-                            <FaEdit/> Edit
+                            <FaEdit /> Edit
                           </button>
                           <button
                             className="flex gap-2 items-center w-full cursor-pointer text-left px-4 py-2 hover:bg-gray-100"
@@ -223,7 +312,7 @@ const Card = () => {
                               setSelectCard(null);
                             }}
                           >
-                            <FaTrashAlt/> Delete
+                            <FaTrashAlt /> Delete
                           </button>
                         </div>
                       )}
