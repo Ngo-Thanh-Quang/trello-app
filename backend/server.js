@@ -5,6 +5,7 @@ const authRoutes = require("./routes/authRoute");
 const profileRoute = require("./routes/profileRoute");
 const boardRoute = require("./routes/boardRoute");
 const cardRoute = require("./routes/cardRoute");
+const taskRoute = require("./routes/taskRoute");
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use("/auth", authRoutes);
 app.use("/profile", profileRoute);
 app.use("/boards", boardRoute);
 app.use("/cards", cardRoute);
+app.use("/tasks", taskRoute);
 
 app.get("/", (req, res) => {
   res.send("Welcome to backend server!");
