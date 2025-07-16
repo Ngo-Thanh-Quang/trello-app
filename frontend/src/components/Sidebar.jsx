@@ -109,7 +109,7 @@ const Sidebar = ({ onLogout, boards, fetchBoards, onSelectBoard, selectedBoardId
           <Link className="flex gap-3 rounded-lg w-full" to="/notifications"><FaBell/> Notify</Link>
         </div>
 
-        <div className="flex items-center gap-3 px-4 py-3 rounded-lg w-full transition-all hover:bg-white/10">
+        <div className="flex font-semibold items-center gap-3 px-4 py-3 rounded-lg w-full transition-all hover:bg-white/10">
           <Link className="flex gap-3 rounded-lg w-full" to="/profile"><FaUser /> Profile</Link>
         </div>
       </nav>
