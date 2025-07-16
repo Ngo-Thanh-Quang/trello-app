@@ -26,6 +26,23 @@ exports.createCard = async (req, res) => {
   }
 };
 
+exports.updateCard = async (req, res) => {
+  const { id } = req.params;
+  const { title } = req.body;
+
+  if (!title) {
+    return res.status(400).json({ message: "Title is required" });
+  }
+
+  try {
+    await cardsModel.updateCard(id, { title });
+    return res.status(200).json({ message: "Card updated successfully" });
+  } catch (error) {
+    console.error("Error updating card:", error);
+    return res.status(500).json({ message: "Failed to update card" });
+  }
+};
+
 exports.deleteCard = async (req, res) => {
   try {
     await cardsModel.deleteCard(req.params.id);

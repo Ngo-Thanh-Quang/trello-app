@@ -19,8 +19,13 @@ const deleteCard = async (id) => {
   await cardsCollection.doc(id).delete();
 };
 
+const updateCard = async (id, data) => {
+  await cardsCollection.doc(id).update(data);
+};
+
 module.exports = {
   getCardsByBoardId,
   createCard,
   deleteCard,
+  updateCard,
 };

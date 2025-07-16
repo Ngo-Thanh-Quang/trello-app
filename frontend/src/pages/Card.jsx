@@ -1,7 +1,8 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { FaLongArrowAltLeft, FaPlus } from "react-icons/fa";
+import { FaLongArrowAltLeft, FaPlus, FaEllipsisV, FaTrashAlt, FaEdit } from "react-icons/fa";
 import { useParams, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 const Card = () => {
@@ -13,6 +14,9 @@ const Card = () => {
   const [card, setCard] = useState([]);
   const [form, setForm] = useState(false);
   const [title, setTitle] = useState("");
+  const [edit, setEdit] = useState(false);
+  const [selectCard, setSelectCard] = useState(null);
+  const [cardTitle, setCardTitle] = useState("");
 
   const onDragEnd = (result) => {
     const { source, destination } = result;
@@ -58,8 +62,47 @@ const Card = () => {
 
       const newCard = { id: res.data.id, title: res.data.title, tasks: [] };
       setCard([...card, newCard]);
+      toast.success("Card created successfully");
     } catch (err) {
       console.error("Error creating card:", err);
+    }
+  };
+
+  const updateCard = async () => {
+    if (!cardTitle) return;
+
+    setCardTitle("");
+    setEdit(false);
+    try {
+      const token = localStorage.getItem("tokenLogin");
+      await axios.put(
+        `${backendUrl}/cards/${selectCard}`,
+        { title: cardTitle },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const updatedCard = card.map((c) =>
+        c.id === selectCard ? { ...c, title: cardTitle } : c
+      );
+      setCard(updatedCard);
+      toast.success("Card updated successfully");
+      setSelectCard(null);
+    } catch (err) {
+      toast.error("Error updating card");
+      console.error("Error updating card:", err);
+    }
+  }
+
+  const deleteCard = async (cardId) => {
+    try {
+      const token = localStorage.getItem("tokenLogin");
+      await axios.delete(`${backendUrl}/cards/${cardId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setCard(card.filter((c) => c.id !== cardId));
+      toast.success("Card deleted successfully");
+    } catch (err) {
+      console.error("Error deleting card:", err);
     }
   };
 
@@ -92,6 +135,15 @@ const Card = () => {
     };
 
     fetchBoardAndCards();
+    const handleClose = (e) => {
+      if (!e.target.closest(".close")) {
+        setSelectCard(null);
+        setForm(false);
+        setEdit(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClose);
+    return () => document.removeEventListener("mousedown", handleClose);
   }, [boardId]);
 
   return (
@@ -142,49 +194,90 @@ const Card = () => {
               />
             </div>
           </div>
-          <DragDropContext onDragEnd={onDragEnd}>
-            <div className="flex gap-4 overflow-x-auto pb-4 items-start">
-              {card.map((card) => (
-                <div
-                  key={card.id}
-                  className="w-64 flex-shrink-0 bg-gray-100 rounded-lg shadow p-3"
-                >
-                  <h4 className="font-bold mb-3">{card.title}</h4>
-                  <Droppable droppableId={card.id}>
-                    {(provided) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.droppableProps}
-                        className="space-y-2 min-h-[5px]"
-                      >
-                        {card.tasks.map((task, index) => (
-                          <Draggable
-                            key={task.id}
-                            draggableId={task.id}
-                            index={index}
-                          >
-                            {(provided) => (
-                              <div
-                                className="bg-white p-2 rounded shadow hover:shadow-md cursor-pointer"
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                              >
-                                {task.content}
-                              </div>
-                            )}
-                          </Draggable>
-                        ))}
-                        {provided.placeholder}
-                      </div>
-                    )}
-                  </Droppable>
-                  <button className="mt-2 w-full cursor-pointer rounded-lg p-2 text-left flex items-center gap-2 hover:bg-gray-300">
-                    <FaPlus className="text-sm" /> Add a task
-                  </button>
-                </div>
-              ))}
+          {card.length > 0 ? (
+            <DragDropContext onDragEnd={onDragEnd}>
+              <div className="flex gap-4 overflow-x-auto pb-4 items-start">
+                {card.map((card) => (
+                  <div
+                    key={card.id}
+                    className="w-64 flex-shrink-0 bg-gray-100 rounded-lg shadow p-3 relative"
+                  >
+                    <div className="absolute right-3 top-3 cursor-pointer text-gray-500 close">
+                      <FaEllipsisV onClick={() => setSelectCard(card.id)} />
 
+                      {selectCard === card.id && (
+                        <div className="absolute top-full right-0 mt-2 bg-white rounded shadow-md z-10 min-w-[120px]">
+                          <button
+                            className="flex gap-2 items-center w-full cursor-pointer text-left px-4 py-2 hover:bg-gray-100"
+                            onClick={() => {
+                              setCardTitle(card.title);
+                              setEdit(true);
+                            }}
+                          >
+                            <FaEdit/> Edit
+                          </button>
+                          <button
+                            className="flex gap-2 items-center w-full cursor-pointer text-left px-4 py-2 hover:bg-gray-100"
+                            onClick={() => {
+                              deleteCard(card.id);
+                              setSelectCard(null);
+                            }}
+                          >
+                            <FaTrashAlt/> Delete
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <h4 className="font-bold mb-3 capitalize">{card.title}</h4>
+                    <Droppable droppableId={card.id}>
+                      {(provided) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.droppableProps}
+                          className="space-y-2 min-h-[5px]"
+                        >
+                          {card.tasks.map((task, index) => (
+                            <Draggable
+                              key={task.id}
+                              draggableId={task.id}
+                              index={index}
+                            >
+                              {(provided) => (
+                                <div
+                                  className="bg-white p-2 rounded shadow hover:shadow-md cursor-pointer"
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                >
+                                  {task.content}
+                                </div>
+                              )}
+                            </Draggable>
+                          ))}
+                          {provided.placeholder}
+                        </div>
+                      )}
+                    </Droppable>
+                    <button className="mt-2 w-full cursor-pointer rounded-lg p-2 text-left flex items-center gap-2 hover:bg-gray-300">
+                      <FaPlus className="text-sm" /> Add a task
+                    </button>
+                  </div>
+                ))}
+
+                <button
+                  onClick={() => setForm(true)}
+                  className="w-64 flex-shrink-0 gap-2 bg-gray-100 hover:bg-gray-200 rounded-lg shadow p-2 flex items-center justify-center cursor-pointer"
+                >
+                  <FaPlus className="text-sm" /> Add another card
+                </button>
+              </div>
+            </DragDropContext>
+          ) : (
+            <div>
+              <div className="text-center text-gray-500">
+                No cards available. Click the button below to create a new card.
+              </div>
               <button
                 onClick={() => setForm(true)}
                 className="w-64 flex-shrink-0 gap-2 bg-gray-100 hover:bg-gray-200 rounded-lg shadow p-2 flex items-center justify-center cursor-pointer"
@@ -192,10 +285,11 @@ const Card = () => {
                 <FaPlus className="text-sm" /> Add another card
               </button>
             </div>
-          </DragDropContext>
+          )}
+          {/* Creating a new card */}
           {form && (
             <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-10">
-              <div className="bg-white p-6 rounded-lg shadow-lg w-96 relative">
+              <div className="bg-white p-6 rounded-lg shadow-lg w-96 relative close">
                 <div
                   className="absolute flex right-3 top-2 cursor-pointer"
                   onClick={() => setForm(false)}
@@ -214,6 +308,35 @@ const Card = () => {
                 />
                 <button
                   onClick={addCard}
+                  className="bg-blue-500 text-white font-semibold cursor-pointer w-full py-2 rounded hover:bg-blue-600"
+                >
+                  Confirm
+                </button>
+              </div>
+            </div>
+          )}
+          {/* Edit card */}
+          {edit && (
+            <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-10">
+              <div className="bg-white p-6 rounded-lg shadow-lg w-96 relative close">
+                <div
+                  className="absolute flex right-3 top-2 cursor-pointer"
+                  onClick={() => setEdit(false)}
+                >
+                  <i className="fa-solid fa-xmark"></i>
+                </div>
+                <h2 className="text-xl font-bold mb-4 text-center">
+                  Edit Card
+                </h2>
+                <input
+                  type="text"
+                  value={cardTitle}
+                  onChange={(e) => setCardTitle(e.target.value)}
+                  placeholder="Enter card title"
+                  className="input mb-4 w-full focus:outline-none"
+                />
+                <button
+                  onClick={updateCard}
                   className="bg-blue-500 text-white font-semibold cursor-pointer w-full py-2 rounded hover:bg-blue-600"
                 >
                   Confirm

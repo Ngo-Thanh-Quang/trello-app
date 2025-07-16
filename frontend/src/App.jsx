@@ -10,7 +10,7 @@ import Dashboard from "./components/Dashboard";
 const App = () => {
   return (
     <BrowserRouter>
-      <ToastContainer />
+      <ToastContainer autoClose={1000} pauseOnHover={false} />
       <Routes>
         <Route path="/" element={<Home />}>
           <Route index element={<Dashboard />} />
