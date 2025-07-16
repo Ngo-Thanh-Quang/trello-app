@@ -14,50 +14,59 @@ const Notifications = () => {
                 });
                 setInvites(res.data);
             } catch (err) {
-                console.error("Lỗi lấy lời mời:", err);
+                console.error("Loi lay loi moi:", err);
             }
         };
         fetchInvites();
     }, []);
 
+    // Send invitation status
+    const sendInviteAction = async ({ board_id, invite_id, member_id, status, card_id }) => {
+        const token = localStorage.getItem("tokenLogin");
+        const payload = { invite_id, member_id, status };
+        if (card_id) payload.card_id = card_id;
+        return axios.post(
+            `${backendUrl}/boards/${board_id}/invite/accept`,
+            payload,
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+    };
+
     const handleAction = async (invite, status) => {
         try {
-            const token = localStorage.getItem("tokenLogin");
-            const res = await axios.post(
-                `${backendUrl}/boards/${invite.board_id}/invite/accept`,
-                {
-                    invite_id: invite.invite_id,
-                    card_id: invite.card_id || '',
-                    member_id: invite.member_id,
-                    status,
-                },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            const res = await sendInviteAction({
+                board_id: invite.board_id,
+                invite_id: invite.invite_id,
+                member_id: invite.member_id,
+                status,
+                card_id: invite.card_id,
+            });
             if (res.data && res.data.success) {
-                alert(`Đã ${status === 'accepted' ? 'chấp nhận' : 'từ chối'} lời mời!`);
+                alert(`Invitation ${status === 'accepted' ? 'accepted' : 'declined'}!`);
                 setInvites(invites.filter((i) => i.invite_id !== invite.invite_id));
             } else {
-                alert('Có lỗi xảy ra khi cập nhật lời mời!');
+                alert('An error occurred while updating the invitation!');
             }
         } catch (err) {
-            alert('Lỗi cập nhật lời mời!');
-            console.error("Lỗi cập nhật lời mời:", err);
+            alert('Failed to update invitation!');
+            console.error("Failed to update invitation:", err);
         }
     };
 
     return (
         <div className="p-8">
-            <h2 className="text-2xl font-bold mb-6">Thông báo lời mời</h2>
+            <h2 className="text-2xl font-bold mb-6">Invitation Notifications</h2>
             {invites.length === 0 ? (
-                <div>Không có lời mời nào.</div>
+                <div>No invitations.</div>
             ) : (
                 <ul className="space-y-4">
                     {invites.map((invite) => (
                         <li key={invite.invite_id} className="bg-gray-100 p-4 rounded shadow flex justify-between items-center">
                             <div>
-                                <div>Ban duoc moi vao bang <span className="font-semibold">{invite.board_id}</span></div>
-                                <div>Nguoi tao bang: {invite.email_member}</div>
-                                <div>Trạng thái: <span className="italic">{invite.status}</span></div>
+                                <div>You have been invited to board <span className="font-semibold">{invite.board_name}</span></div>
+                                <div>Description: <span className="italic">{invite.board_description}</span></div>
+                                <div>Board owner: {invite.email_member}</div>
+                                <div>Status: <span className="italic">{invite.status}</span></div>
                             </div>
                             <div className="flex gap-2">
                                 <button

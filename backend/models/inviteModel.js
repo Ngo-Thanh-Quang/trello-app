@@ -20,3 +20,11 @@ exports.getInvitationsForUser = async (email_member) => {
   const snapshot = await db.collection("invitations").where("email_member", "==", email_member).where("status", "==", "pending").get();
   return snapshot.docs.map(doc => doc.data());
 };
+
+exports.getInvitedEmailsForBoard = async (board_id) => {
+  const snapshot = await db.collection("invitations")
+    .where("board_id", "==", board_id)
+    .where("status", "==", "pending")
+    .get();
+  return snapshot.docs.map(doc => doc.data().email_member);
+};

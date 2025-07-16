@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FaTrello, FaUser, FaSignOutAlt, FaThLarge, FaPlus, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { IoIosNotifications } from "react-icons/io";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
@@ -103,14 +104,13 @@ const Sidebar = ({ onLogout, boards, fetchBoards, onSelectBoard, selectedBoardId
             </div>
           )}
         </div>
-        <div className="px-4 pb-6">
-          <button
-            className="flex items-center gap-3 px-4 py-3 rounded-lg w-full transition-all hover:bg-white/10"
-            onClick={() => navigate('/notifications')}
-          >
-            Notify
-          </button>
+
+        <div className="flex items-center gap-3 px-4 py-3 rounded-lg w-full transition-all hover:bg-white/10">
+          <Link className="flex gap-3 rounded-lg w-full" to="/notifications">
+            <IoIosNotifications size={20} />Notify
+          </Link>
         </div>
+
         <div className="flex items-center gap-3 px-4 py-3 rounded-lg w-full transition-all hover:bg-white/10">
           <Link className="flex gap-3 rounded-lg w-full" to="/profile"><FaUser /> Profile</Link>
         </div>
