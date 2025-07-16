@@ -26,3 +26,17 @@ exports.emailVerification = async (email, otp) => {
       throw new Error("Unable to send verification email");
     }
 }
+
+exports.sendBoardInviteEmail = async (email, boardName, boardDescription) => {
+  try {
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: `Invitation to join board: ${boardName}`,
+      text: `You have been invited to join the board "${boardName}".\nDescription: ${boardDescription}`,
+    });
+  } catch (error) {
+    console.error("Error sending invite email:", error);
+    throw new Error("Unable to send invite email");
+  }
+};

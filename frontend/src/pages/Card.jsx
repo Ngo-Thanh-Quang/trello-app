@@ -35,9 +35,37 @@ const Card = () => {
   const [taskStatus, setTaskStatus] = useState("");
   const [detailTask, setDetailTask] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState("");
   const [allUsers, setAllUsers] = useState([]);
-  const [selectedEmails, setSelectedEmails] = useState([]);
+  const [inviteEmails, setInviteEmails] = useState([]);
+  const [alreadyInvited, setAlreadyInvited] = useState([]);
+
+  const fetchInvitedEmails = async () => {
+    try {
+      const token = localStorage.getItem("tokenLogin");
+      const res = await axios.get(`${backendUrl}/boards/${boardId}/invited-emails`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setAlreadyInvited(res.data);
+    } catch (err) {
+      setAlreadyInvited([]);
+    }
+  };
+  fetchInvitedEmails();
+
+  const sendInvites = async (emails) => {
+    const token = localStorage.getItem("tokenLogin");
+    await Promise.all(emails.map(email =>
+      axios.post(
+        `${backendUrl}/boards/${boardId}/invite`,
+        {
+          member_id: Date.now().toString(),
+          email_member: email,
+          status: "pending",
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+    ));
+  };
 
   const onDragEnd = async(result) => {
     const { source, destination, draggableId } = result;
@@ -318,50 +346,41 @@ const Card = () => {
                     >
                       <i className="fa-solid fa-xmark"></i>
                     </div>
-                    <h2 className="text-xl font-bold mb-4 text-center">Invite Member</h2>
+                    <h2 className="text-xl font-bold mb-4 text-center">Invite Members</h2>
                     <div className="mb-4">
-                      <div className="font-semibold mb-2">Chọn email để mời:</div>
+                      <div className="font-semibold mb-2">Select emails to invite:</div>
                       <div className="max-h-40 overflow-y-auto border rounded p-2">
                         {allUsers.length === 0 ? (
-                          <div>Không có user nào để mời.</div>
+                          <div>No users available to invite.</div>
                         ) : (
-                          allUsers.map((email) => (
-                            <label key={email} className="flex items-center gap-2 mb-1">
-                              <input
-                                type="checkbox"
-                                checked={selectedEmails.includes(email)}
-                                onChange={(e) => {
-                                  if (e.target.checked) {
-                                    setSelectedEmails([...selectedEmails, email]);
-                                  } else {
-                                    setSelectedEmails(selectedEmails.filter((em) => em !== email));
-                                  }
-                                }}
-                              />
-                              <span>{email}</span>
-                            </label>
-                          ))
+                          allUsers
+                            .filter(email => email !== board.board_owner_id && !alreadyInvited.includes(email))
+                            .map((email) => (
+                              <label key={email} className="flex items-center gap-2 mb-1">
+                                <input
+                                  type="checkbox"
+                                  checked={inviteEmails.includes(email)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setInviteEmails([...inviteEmails, email]);
+                                    } else {
+                                      setInviteEmails(inviteEmails.filter((em) => em !== email));
+                                    }
+                                  }}
+                                />
+                                <span>{email}</span>
+                              </label>
+                            ))
                         )}
                       </div>
                     </div>
                     <button
                       onClick={async () => {
-                        if (selectedEmails.length === 0) return;
+                        if (inviteEmails.length === 0) return;
                         try {
-                          const token = localStorage.getItem("tokenLogin");
-                          await Promise.all(selectedEmails.map(email =>
-                            axios.post(
-                              `${backendUrl}/boards/${boardId}/invite`,
-                              {
-                                member_id: Date.now().toString(),
-                                email_member: email,
-                                status: "pending",
-                              },
-                              { headers: { Authorization: `Bearer ${token}` } }
-                            )
-                          ));
+                          await sendInvites(inviteEmails);
                           setShowInvite(false);
-                          setSelectedEmails([]);
+                          setInviteEmails([]);
                           alert("Đã gửi lời mời thành công!");
                         } catch (err) {
                           alert("Gửi lời mời thất bại!");

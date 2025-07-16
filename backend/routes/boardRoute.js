@@ -15,6 +15,6 @@ router.delete("/:id", authToken , boardController.deleteBoard);
 router.post('/:boardId/invite', authToken, inviteController.inviteToBoard);
 // router.post('/:boardId/cards/:id/invite/accept', authToken, inviteController.acceptInvite);
 router.post('/:boardId/invite/accept', authToken, inviteController.acceptInvite);
-
+router.get('/:boardId/invited-emails', inviteController.getInvitedEmails);
 
 module.exports = router;
