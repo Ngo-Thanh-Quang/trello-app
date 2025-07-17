@@ -34,6 +34,7 @@ const Card = () => {
   const [taskTitle, setTaskTitle] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
   const [taskStatus, setTaskStatus] = useState("");
+  const [taskAssignee, setTaskAssginee] = useState("");
   const [detailTask, setDetailTask] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
   const [allUsers, setAllUsers] = useState([]);
@@ -41,24 +42,29 @@ const Card = () => {
   const [alreadyInvited, setAlreadyInvited] = useState([]);
 
   useEffect(() => {
-  const fetchMembers = async () => {
-    try {
-      const res = await fetch(`${backendUrl}/boards/${boardId}/accepted-members`);
-      const members = await res.json();
-      setBoardMembers({ [boardId]: members });
-    } catch (e) {
-      setBoardMembers({ [boardId]: [] });
-    }
-  };
-  if (boardId) fetchMembers();
-}, [boardId, backendUrl]);
+    const fetchMembers = async () => {
+      try {
+        const res = await fetch(
+          `${backendUrl}/boards/${boardId}/accepted-members`
+        );
+        const members = await res.json();
+        setBoardMembers({ [boardId]: members });
+      } catch (e) {
+        setBoardMembers({ [boardId]: [] });
+      }
+    };
+    if (boardId) fetchMembers();
+  }, [boardId, backendUrl]);
 
   const fetchInvitedEmails = async () => {
     try {
       const token = localStorage.getItem("tokenLogin");
-      const res = await axios.get(`${backendUrl}/boards/${boardId}/invited-emails`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get(
+        `${backendUrl}/boards/${boardId}/invited-emails`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setAlreadyInvited(res.data);
     } catch (err) {
       setAlreadyInvited([]);
@@ -72,17 +78,19 @@ const Card = () => {
 
   const sendInvites = async (emails) => {
     const token = localStorage.getItem("tokenLogin");
-    await Promise.all(emails.map(email =>
-      axios.post(
-        `${backendUrl}/boards/${boardId}/invite`,
-        {
-          member_id: Date.now().toString(),
-          email_member: email,
-          status: "pending",
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
+    await Promise.all(
+      emails.map((email) =>
+        axios.post(
+          `${backendUrl}/boards/${boardId}/invite`,
+          {
+            member_id: Date.now().toString(),
+            email_member: email,
+            status: "pending",
+          },
+          { headers: { Authorization: `Bearer ${token}` } }
+        )
       )
-    ));
+    );
   };
 
   const onDragEnd = async (result) => {
@@ -240,14 +248,27 @@ const Card = () => {
     try {
       await axios.put(
         `${backendUrl}/tasks/update/${taskId}`,
-        { title: taskTitle, description: taskDescription, status: taskStatus },
+        {
+          title: taskTitle,
+          description: taskDescription,
+          status: taskStatus,
+          assignee: taskAssignee,
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       const updatedCard = card.map((c) => ({
         ...c,
         tasks: c.tasks.map((t) =>
-          t.id === taskId ? { ...t, title: taskTitle, description: taskDescription, status: taskStatus } : t
+          t.id === taskId
+            ? {
+                ...t,
+                title: taskTitle,
+                description: taskDescription,
+                status: taskStatus,
+                assignee: taskAssignee,
+              }
+            : t
         ),
       }));
       setCard(updatedCard);
@@ -257,12 +278,12 @@ const Card = () => {
       setTaskId(null);
       setTaskTitle("");
       setTaskDescription("");
+      setTaskAssginee("");
     } catch (err) {
       toast.error("Failed to update task");
       console.error("Update task error:", err);
     }
   };
-
 
   useEffect(() => {
     const fetchBoardAndCards = async () => {
@@ -364,17 +385,33 @@ const Card = () => {
                     >
                       <i className="fa-solid fa-xmark"></i>
                     </div>
-                    <h2 className="text-xl font-bold mb-4 text-center">Invite Members</h2>
+                    <h2 className="text-xl font-bold mb-4 text-center">
+                      Invite Members
+                    </h2>
                     <div className="mb-4">
-                      <div className="font-semibold mb-2">Select emails to invite:</div>
+                      <div className="font-semibold mb-2">
+                        Select emails to invite:
+                      </div>
                       <div className="max-h-40 overflow-y-auto border rounded p-2">
-                        {allUsers.length === 0 || allUsers.filter(email => email !== board.board_owner_id && !alreadyInvited.includes(email)).length === 0 ? (
+                        {allUsers.length === 0 ||
+                        allUsers.filter(
+                          (email) =>
+                            email !== board.board_owner_id &&
+                            !alreadyInvited.includes(email)
+                        ).length === 0 ? (
                           <div>No users available to invite.</div>
                         ) : (
                           allUsers
-                            .filter(email => email !== board.userEmail && !alreadyInvited.includes(email))
+                            .filter(
+                              (email) =>
+                                email !== board.userEmail &&
+                                !alreadyInvited.includes(email)
+                            )
                             .map((email) => (
-                              <label key={email} className="flex items-center gap-2 mb-1">
+                              <label
+                                key={email}
+                                className="flex items-center gap-2 mb-1"
+                              >
                                 <input
                                   type="checkbox"
                                   checked={inviteEmails.includes(email)}
@@ -382,7 +419,11 @@ const Card = () => {
                                     if (e.target.checked) {
                                       setInviteEmails([...inviteEmails, email]);
                                     } else {
-                                      setInviteEmails(inviteEmails.filter((em) => em !== email));
+                                      setInviteEmails(
+                                        inviteEmails.filter(
+                                          (em) => em !== email
+                                        )
+                                      );
                                     }
                                   }}
                                 />
@@ -419,15 +460,19 @@ const Card = () => {
               >
                 <FaPlus />
               </button>
-              
-              {boardMembers[boardId] && boardMembers[boardId].length > 0 && boardMembers[boardId].map((m, idx) => (
-                <img
-                  key={m.email || idx}
-                  className="inline-block size-8 md:size-10 rounded-full ring-2 ring-white cursor-pointer"
-                  src={m.picture || "https://ui-avatars.com/api/?name=" + (m.name)}
-                  alt={m.name || m.email} 
-                />
-              ))}
+
+              {boardMembers[boardId] &&
+                boardMembers[boardId].length > 0 &&
+                boardMembers[boardId].map((m, idx) => (
+                  <img
+                    key={m.email || idx}
+                    className="inline-block size-8 md:size-10 rounded-full ring-2 ring-white cursor-pointer"
+                    src={
+                      m.picture || "https://ui-avatars.com/api/?name=" + m.name
+                    }
+                    alt={m.name || m.email}
+                  />
+                ))}
             </div>
           </div>
           {card.length > 0 ? (
@@ -503,6 +548,7 @@ const Card = () => {
                                         className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center cursor-pointer gap-2"
                                         onClick={() => {
                                           setDetailTask(true);
+                                          setTaskAssginee(task.assignee);
                                           setTaskTitle(task.title);
                                           setTaskDescription(task.description);
                                           setTaskStatus(task.status);
@@ -688,6 +734,7 @@ const Card = () => {
                     setTaskId(null);
                     setTaskTitle("");
                     setTaskDescription("");
+                    setTaskAssginee("");
                   }}
                 >
                   <i className="fa-solid fa-xmark"></i>
@@ -698,9 +745,21 @@ const Card = () => {
                 <label for="members" className="p-2 pr-5 font-semibold">
                   Assignee:
                 </label>
-                <select className="p-2" name="members">
-                  <option value="quang">Quang</option>
-                </select>{" "}
+                <select
+                  className="p-2"
+                  name="members"
+                  value={taskAssignee}
+                  onChange={(e) => setTaskAssginee(e.target.value)} // <- ĐÚNG
+                >
+                  {boardMembers[boardId] &&
+                    boardMembers[boardId].length > 0 &&
+                    boardMembers[boardId].map((m, idx) => (
+                      <option key={m.email} value={m.name}>
+                        {m.name}
+                      </option>
+                    ))}
+                </select>
+
                 <br />
                 <label className="p-2 pr-5 font-semibold block">Status:</label>
                 <div className="flex gap-4 mb-4 px-2">
@@ -782,7 +841,7 @@ const Card = () => {
                   </div>
                   <div>
                     <p className="p-2 text-gray-600 font-semibold italic capitalize">
-                      Quang
+                      {taskAssignee}
                     </p>
                     <p className="p-2 text-gray-600 font-semibold italic capitalize">
                       {taskTitle}

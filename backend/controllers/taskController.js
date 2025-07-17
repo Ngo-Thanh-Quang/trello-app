@@ -40,10 +40,10 @@ exports.deleteTask = async (req, res) => {
 
 exports.updateTask = async (req, res) => {
   const { taskId } = req.params;
-  const { title, description, status } = req.body;
+  const { title, description, status, assignee } = req.body;
 
   try {
-    await taskModel.updateTask(taskId, title, description, status);
+    await taskModel.updateTask(taskId, title, description, status, assignee);
     return res.status(200).json({ message: "Task updated successfully" });
   } catch (err) {
     return res.status(500).json({ message: "Failed to update task" });
