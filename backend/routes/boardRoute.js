@@ -8,6 +8,7 @@ const inviteController = require("../controllers/inviteController");
 
 router.post("/", authToken , boardController.createBoard);
 router.get("/", authToken , boardController.getBoards);
+router.get("/invited-accepted", authToken, boardController.getBoardsInvitedAccepted);
 router.get("/:id", authToken , boardController.getBoardById);
 router.put("/:id", authToken , boardController.updateBoard);
 router.delete("/:id", authToken , boardController.deleteBoard);
