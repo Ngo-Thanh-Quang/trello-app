@@ -10,7 +10,7 @@ const createBoard = async (data) => {
 const getBoardsByUser = async (userEmail) => {
   let snapshot;
   if (userEmail) {
-    snapshot = await boardsCollection.where("userEmail", "==", userEmail).get();
+    snapshot = await boardsCollection.where("userEmail", "==", userEmail).get().limit(100); // Limit to 100 boards for performance
   } else {
     snapshot = await boardsCollection.get();
   }

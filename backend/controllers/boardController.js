@@ -1,4 +1,5 @@
 
+const inviteModel = require('../models/inviteModel');
 
 // Tao bang moi
 exports.createBoard = async (req, res) => {
@@ -13,6 +14,14 @@ exports.createBoard = async (req, res) => {
   };
   try {
     const newBoard = await boardsModel.createBoard(board);
+    await inviteModel.createInvitation({
+      invite_id: `owner_${Date.now()}`,
+      board_owner_id: req.userEmail,
+      board_id: newBoard.id || newBoard.board_id || newBoard._id,
+      member_id: req.userEmail,
+      email_member: req.userEmail,
+      status: 'accepted',
+    });
     return res.status(201).json(newBoard);
   } catch (error) {
     console.error("Loi:", error);
