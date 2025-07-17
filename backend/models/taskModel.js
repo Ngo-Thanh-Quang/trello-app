@@ -24,12 +24,13 @@ exports.deleteTask = async (taskId) => {
   await tasksCollection.doc(taskId).delete();
 };
 
-exports.updateTask = async (taskId, title, description, status) => {
+exports.updateTask = async (taskId, title, description, status, assignee) => {
   const taskRef = tasksCollection.doc(taskId);
   await taskRef.update({
     title,
     description,
     status,
+    assignee
   });
 };
 
