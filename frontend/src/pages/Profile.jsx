@@ -1,101 +1,20 @@
-import axios from "axios";
-import React, { useEffect, useState } from "react";
-import { toast } from "react-toastify";
+import React, { useState } from "react";
+import { useProfile } from "../hooks/useProfile";
 
 const Profile = () => {
-  const backendUrl = import.meta.env.VITE_BACKEND_URL;
-  const [user, setUser] = useState(null);
+  const { user, loading, updateProfile } = useProfile();
   const [edit, setEdit] = useState(false);
   const [updateName, setUpdateName] = useState("");
-  const [input, setInput] = useState(false);
   const [avatar, setAvatar] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [input, setInput] = useState(false);
 
-  useEffect(() => {
-    const token = localStorage.getItem("tokenLogin");
-    if (!token) return;
-
-    const fetchUser = async () => {
-      try {
-        const res = await axios.get(`${backendUrl}/profile`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (res.status === 200) {
-          setUser(res.data.user);
-          setUpdateName(res.data.user.name);
-        } else {
-          console.error("Failed to fetch user profile");
-        }
-      } catch (error) {
-        console.error("Error fetching user profile:", error);
-        setUser(null);
-      }
-    };
-    fetchUser();
-  }, []);
+  React.useEffect(() => {
+    if (user) setUpdateName(user.name);
+  }, [user]);
 
   const handleUpdate = async () => {
-    const token = localStorage.getItem("tokenLogin");
-    setLoading(true);
-    if (!token) {
-      toast.error("You need to be logged in to update your profile");
-      return;
-    }
-
-    let updated = false;
-
-    try {
-      // Cập nhật tên
-      if (updateName !== user.name) {
-        const res = await axios.put(
-          `${backendUrl}/profile`,
-          { name: updateName },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        if (res.status === 200) {
-          setUser((prev) => ({ ...prev, name: updateName }));
-          updated = true;
-        }
-      }
-
-      // Cập nhật avatar
-      if (avatar) {
-        const formData = new FormData();
-        formData.append("avatar", avatar);
-
-        const res = await axios.put(
-          `${backendUrl}/profile/update-avatar`,
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
-
-        if (res.status === 200) {
-          setUser((prev) => ({ ...prev, picture: res.data.picture }));
-          updated = true;
-        }
-      }
-
-      if (updated) {
-        toast.success("Profile updated successfully!");
-        setEdit(false);
-      }
-    } catch (error) {
-      console.error("Error updating profile:", error);
-      toast.error("Failed to update profile");
-    } finally {
-      setLoading(false);
-    }
+    await updateProfile({ name: updateName, avatar });
+    setEdit(false);
   };
 
   return (
