@@ -1,5 +1,5 @@
 // src/pages/Board.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Outlet } from "react-router";
 import Sidebar from "../components/Sidebar";
 import axios from "axios";
@@ -10,10 +10,11 @@ const BoardPage = ({ token }) => {
   const [boards, setBoards] = useState([]);
   const [invitedBoards, setInvitedBoards] = useState([]);
   const [selectedBoardId, setSelectedBoardId] = useState(null);
-  const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [newBoard, setNewBoard] = useState({ name: "", description: "" });
+  const sidebarRef = useRef(null);
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   // danh sach bang
   const fetchBoards = async () => {
@@ -94,7 +95,7 @@ const BoardPage = ({ token }) => {
 
   useEffect(() => {
     fetchBoards();
-    
+
     const fetchInvitedBoards = async () => {
       const token = localStorage.getItem("tokenLogin");
       if (!token) return;
@@ -107,8 +108,24 @@ const BoardPage = ({ token }) => {
         setInvitedBoards([]);
       }
     };
+
+    const handleClickOutside = (e) => {
+      if (sidebarRef.current && !sidebarRef.current.contains(e.target)) {
+        setSidebarOpen(false);
+      }
+    };
+
+    if (sidebarOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
     fetchInvitedBoards();
-  }, [token]);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [token, sidebarOpen]);
 
   return (
     <>
@@ -121,6 +138,7 @@ const BoardPage = ({ token }) => {
         </button>
       </div>
       <Sidebar
+        ref={sidebarRef}
         boards={boards}
         invitedBoards={invitedBoards}
         fetchBoards={fetchBoards}

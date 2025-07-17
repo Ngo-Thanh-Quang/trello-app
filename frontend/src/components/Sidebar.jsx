@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { forwardRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   FaTrello,
@@ -13,7 +13,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
-const Sidebar = ({
+const Sidebar = forwardRef(({
   onLogout,
   boards,
   fetchBoards,
@@ -22,33 +22,13 @@ const Sidebar = ({
   sidebarOpen,
   setSidebarOpen,
   setShowCreate,
-}) => {
+}, ref) => {
   const location = useLocation();
   const [showBoards, setShowBoards] = useState(false);
   const [showAllBoards, setShowAllBoards] = useState(false);
   const [newBoard, setNewBoard] = useState({ name: "", description: "" });
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const navigate = useNavigate();
-
-  // Tạo board mới
-  const handleCreateBoard = async (e) => {
-    e.preventDefault();
-    const token = localStorage.getItem("tokenLogin");
-
-    try {
-      const res = await axios.post(`${backendUrl}/boards`, newBoard, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      toast.success("Create new board successfully!");
-      setShowCreate(false);
-      setNewBoard({ name: "", description: "" });
-      fetchBoards();
-    } catch (err) {
-      console.error("Error creating board:", err);
-      toast.error("Failed to create board. Please try again.");
-    }
-  };
 
   const handleLogout = () => {
     localStorage.removeItem("tokenLogin");
@@ -57,6 +37,7 @@ const Sidebar = ({
 
   return (
     <aside
+    ref={ref}
       className={`h-screen fixed top-20 left-0 z-10 w-64 bg-gradient-to-b from-blue-500 to-blue-800 text-white flex flex-col shadow-lg transform transition-transform duration-300
     ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
     md:translate-x-0 md:h-screen`}
@@ -82,7 +63,10 @@ const Sidebar = ({
             <div className="ml-8 mt-2">
               <button
                 className="flex items-center gap-2 px-2 py-2 text-sm text-blue-100 hover:text-white hover:bg-blue-700 rounded w-full mb-2"
-                onClick={() => setShowCreate(true)}
+                onClick={() => {
+                  setShowCreate(true)
+                  setSidebarOpen(!sidebarOpen)
+                }}
               >
                 <FaPlus /> Create Board
               </button>
@@ -97,7 +81,10 @@ const Sidebar = ({
                       return (
                         <button
                           key={board.id}
-                          onClick={() => navigate(`/board/${board.id}`)}
+                          onClick={() => {
+                            navigate(`/board/${board.id}`)
+                            setSidebarOpen(!sidebarOpen)
+                          }}
                           className={`block px-2 py-2 rounded text-sm w-full text-left transition-transform transform hover:-translate-y-1 hover:shadow-xl cursor-pointer border group
         ${
           isSelected
@@ -134,13 +121,13 @@ const Sidebar = ({
         </div>
 
         <div className="flex font-semibold items-center gap-3 px-4 py-3 rounded-lg w-full transition-all hover:bg-white/10">
-          <Link className="flex items-center gap-3 rounded-lg w-full" to="/notifications">
+          <Link className="flex items-center gap-3 rounded-lg w-full" to="/notifications" onClick={()=>setSidebarOpen(!sidebarOpen)}>
             <FaBell /> Notify
           </Link>
         </div>
 
         <div className="flex font-semibold items-center gap-3 px-4 py-3 rounded-lg w-full transition-all hover:bg-white/10">
-          <Link className="flex items-center gap-3 rounded-lg w-full" to="/profile">
+          <Link className="flex items-center gap-3 rounded-lg w-full" to="/profile" onClick={()=>setSidebarOpen(!sidebarOpen)}>
             <FaUser /> Profile
           </Link>
         </div>
@@ -155,6 +142,6 @@ const Sidebar = ({
       
     </aside>
   );
-};
+});
 
 export default Sidebar;
