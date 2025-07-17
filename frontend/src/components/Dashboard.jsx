@@ -64,7 +64,7 @@ const Dashboard = () => {
                     <p className="text-gray-600 group-hover:text-gray-800 transition-colors min-h-[32px]">
                       {boardMembers[board.id] && boardMembers[board.id].length > 0 ? (
                         <span>
-                          Members: {boardMembers[board.id].map(m => m.name || m.email).join(', ')}
+                          Members: {boardMembers[board.id].map(m => m.name).join(', ')}
                         </span>
                       ) : (
                         <span className="italic text-gray-400">Members: No one</span>

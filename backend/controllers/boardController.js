@@ -103,6 +103,10 @@ exports.deleteBoard = async (req, res) => {
     if (!board || board.userEmail !== req.userEmail) {
       return res.status(404).json({ message: "Board not found or unauthorized" });
     }
+    const cardsSnapshot = await db.collection('cards').where('boardId', '==', id).get();
+    const deleteCardPromises = cardsSnapshot.docs.map(doc => doc.ref.delete());
+    await Promise.all(deleteCardPromises);
+    // Xóa board
     await boardsModel.deleteBoard(id);
     return res.status(204).send();
   } catch (error) {
