@@ -13,6 +13,7 @@ import { toast } from "react-toastify";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 const Card = () => {
+  const [boardMembers, setBoardMembers] = useState({});
   const { boardId } = useParams();
   const navigate = useNavigate();
   const [board, setBoards] = useState([]);
@@ -38,6 +39,19 @@ const Card = () => {
   const [allUsers, setAllUsers] = useState([]);
   const [inviteEmails, setInviteEmails] = useState([]);
   const [alreadyInvited, setAlreadyInvited] = useState([]);
+
+  useEffect(() => {
+  const fetchMembers = async () => {
+    try {
+      const res = await fetch(`${backendUrl}/boards/${boardId}/accepted-members`);
+      const members = await res.json();
+      setBoardMembers({ [boardId]: members });
+    } catch (e) {
+      setBoardMembers({ [boardId]: [] });
+    }
+  };
+  if (boardId) fetchMembers();
+}, [boardId, backendUrl]);
 
   const fetchInvitedEmails = async () => {
     try {
@@ -71,7 +85,7 @@ const Card = () => {
     ));
   };
 
-  const onDragEnd = async(result) => {
+  const onDragEnd = async (result) => {
     const { source, destination, draggableId } = result;
 
     if (!destination) return;
@@ -99,15 +113,15 @@ const Card = () => {
       setCard(updatedCard);
 
       try {
-      const token = localStorage.getItem("tokenLogin");
-      await axios.put(
-        `${backendUrl}/tasks/update-card/${draggableId}`,
-        { cardId: destination.droppableId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-    } catch (err) {
-      console.error("Failed to move task:", err);
-    }
+        const token = localStorage.getItem("tokenLogin");
+        await axios.put(
+          `${backendUrl}/tasks/update-card/${draggableId}`,
+          { cardId: destination.droppableId },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      } catch (err) {
+        console.error("Failed to move task:", err);
+      }
     }
   };
 
@@ -220,34 +234,34 @@ const Card = () => {
   };
 
   const updateTask = async () => {
-  if (!taskTitle) return;
-  const token = localStorage.getItem("tokenLogin");
+    if (!taskTitle) return;
+    const token = localStorage.getItem("tokenLogin");
 
-  try {
-    await axios.put(
-      `${backendUrl}/tasks/update/${taskId}`,
-      { title: taskTitle, description: taskDescription, status: taskStatus },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    try {
+      await axios.put(
+        `${backendUrl}/tasks/update/${taskId}`,
+        { title: taskTitle, description: taskDescription, status: taskStatus },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-    const updatedCard = card.map((c) => ({
-      ...c,
-      tasks: c.tasks.map((t) =>
-        t.id === taskId ? { ...t, title: taskTitle, description: taskDescription, status: taskStatus } : t
-      ),
-    }));
-    setCard(updatedCard);
+      const updatedCard = card.map((c) => ({
+        ...c,
+        tasks: c.tasks.map((t) =>
+          t.id === taskId ? { ...t, title: taskTitle, description: taskDescription, status: taskStatus } : t
+        ),
+      }));
+      setCard(updatedCard);
 
-    toast.success("Task updated successfully");
-    setEditTask(false);
-    setTaskId(null);
-    setTaskTitle("");
-    setTaskDescription("");
-  } catch (err) {
-    toast.error("Failed to update task");
-    console.error("Update task error:", err);
-  }
-};
+      toast.success("Task updated successfully");
+      setEditTask(false);
+      setTaskId(null);
+      setTaskTitle("");
+      setTaskDescription("");
+    } catch (err) {
+      toast.error("Failed to update task");
+      console.error("Update task error:", err);
+    }
+  };
 
 
   useEffect(() => {
@@ -398,34 +412,22 @@ const Card = () => {
                 </div>
               )}
             </div>
-            <div className="flex -space-x-2">
+            <div className="flex -space-x-2 items-center">
               <button
                 className="w-10 md:w-16 flex-shrink-0 gap-2 bg-gray-100 hover:bg-gray-200 rounded-lg shadow p-2 flex items-center justify-center cursor-pointer"
                 onClick={() => setShowInvite(true)}
               >
                 <FaPlus />
               </button>
-              <img
-                className="inline-block size-8 md:size-10 rounded-full ring-2 ring-white cursor-pointer"
-                src="https://www.vietnamworks.com/hrinsider/wp-content/uploads/2023/12/anh-den-ngau.jpeg"
-                alt=""
-              />
-              <img
-                className="inline-block size-8 md:size-10 rounded-full ring-2 ring-white cursor-pointer"
-                src="https://images.unsplash.com/photo-1550525811-e5869dd03032?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                alt=""
-                onClick={() => navigate("/")}
-              />
-              <img
-                className="inline-block size-8 md:size-10 rounded-full ring-2 ring-white cursor-pointer"
-                src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2.25&w=256&h=256&q=80"
-                alt=""
-              />
-              <img
-                className="inline-block size-8 md:size-10 rounded-full ring-2 ring-white cursor-pointer"
-                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                alt=""
-              />
+              
+              {boardMembers[boardId] && boardMembers[boardId].length > 0 && boardMembers[boardId].map((m, idx) => (
+                <img
+                  key={m.email || idx}
+                  className="inline-block size-8 md:size-10 rounded-full ring-2 ring-white cursor-pointer"
+                  src={m.picture || "https://ui-avatars.com/api/?name=" + (m.name)}
+                  alt={m.name || m.email} 
+                />
+              ))}
             </div>
           </div>
           {card.length > 0 ? (
