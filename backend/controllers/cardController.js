@@ -18,7 +18,8 @@ exports.createCard = async (req, res) => {
   }
 
   try {
-    const newCard = await cardsModel.createCard({ boardId, title });
+    const createdAt = new Date().toISOString().split("T")[0];
+    const newCard = await cardsModel.createCard({ boardId, title, createdAt });
     return res.status(201).json(newCard);
   } catch (error) {
     console.error("Error creating card:", error);
