@@ -8,6 +8,7 @@ import { FaBars, FaTimes } from "react-icons/fa";
 
 const BoardPage = ({ token }) => {
   const [boards, setBoards] = useState([]);
+  const [invitedBoards, setInvitedBoards] = useState([]);
   const [selectedBoardId, setSelectedBoardId] = useState(null);
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -93,6 +94,20 @@ const BoardPage = ({ token }) => {
 
   useEffect(() => {
     fetchBoards();
+    
+    const fetchInvitedBoards = async () => {
+      const token = localStorage.getItem("tokenLogin");
+      if (!token) return;
+      try {
+        const res = await axios.get(`${backendUrl}/boards/invited-accepted`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setInvitedBoards(res.data);
+      } catch {
+        setInvitedBoards([]);
+      }
+    };
+    fetchInvitedBoards();
   }, [token]);
 
   return (
@@ -107,6 +122,7 @@ const BoardPage = ({ token }) => {
       </div>
       <Sidebar
         boards={boards}
+        invitedBoards={invitedBoards}
         fetchBoards={fetchBoards}
         onSelectBoard={setSelectedBoardId}
         selectedBoardId={selectedBoardId}
@@ -120,6 +136,7 @@ const BoardPage = ({ token }) => {
         <Outlet
           context={{
             boards,
+            invitedBoards,
             selectedBoardId,
             onSelectBoard: setSelectedBoardId,
             handleEditBoard,

@@ -1,4 +1,8 @@
 
+const inviteModel = require('../models/inviteModel');
+const db = require('../firebase');
+const boardsModel = require("../models/boardModel");
+
 
 // Tao bang moi
 exports.createBoard = async (req, res) => {
@@ -13,6 +17,14 @@ exports.createBoard = async (req, res) => {
   };
   try {
     const newBoard = await boardsModel.createBoard(board);
+    await inviteModel.createInvitation({
+      invite_id: `owner_${Date.now()}`,
+      board_owner_id: req.userEmail,
+      board_id: newBoard.id || newBoard.board_id || newBoard._id,
+      member_id: req.userEmail,
+      email_member: req.userEmail,
+      status: 'accepted',
+    });
     return res.status(201).json(newBoard);
   } catch (error) {
     console.error("Loi:", error);
@@ -35,10 +47,25 @@ exports.getBoards = async (req, res) => {
 exports.getBoardById = async (req, res) => {
   try {
     const board = await boardsModel.getBoardById(req.params.id);
-    if (!board || board.userEmail !== req.userEmail) {
-      return res.status(404).json({ message: "Board not found or unauthorized" });
+    if (!board) {
+      return res.status(404).json({ message: "Board not found" });
     }
-    return res.status(200).json(board);
+    // Cho phép owner hoặc member có status accepted truy cập
+    if (board.userEmail === req.userEmail) {
+      return res.status(200).json(board);
+    }
+    // Kiểm tra nếu user là member với status accepted
+    const db = require('../firebase');
+    const inviteSnapshot = await db.collection('invitations')
+      .where('board_id', '==', board.id)
+      .where('email_member', '==', req.userEmail)
+      .where('status', '==', 'accepted')
+      .limit(1)
+      .get();
+    if (!inviteSnapshot.empty) {
+      return res.status(200).json(board);
+    }
+    return res.status(404).json({ message: "Board not found or unauthorized" });
   } catch (error) {
     console.error("Error getting board by id:", error);
     return res.status(500).json({ message: "Failed to get board" });
@@ -83,6 +110,31 @@ exports.deleteBoard = async (req, res) => {
     return res.status(500).json({ message: "Failed to delete board" });
   }
 };
-const boardsModel = require("../models/boardModel");
+
+// Lấy các board mà user là member với status accepted
+exports.getBoardsInvitedAccepted = async (req, res) => {
+  try {
+    // Lấy các invitation có email_member là user hiện tại và status accepted
+    const email = req.userEmail;
+    const inviteSnapshot = await db.collection('invitations')
+      .where('email_member', '==', email)
+      .where('status', '==', 'accepted')
+      .limit(50)
+      .get();
+    const boardIds = inviteSnapshot.docs.map(doc => doc.data().board_id);
+    if (boardIds.length === 0) return res.status(200).json([]);
+    // Lấy thông tin các board theo id
+    const boardsCollection = db.collection('boards');
+    const boardPromises = boardIds.map(id => boardsCollection.doc(id).get());
+    const boardDocs = await Promise.all(boardPromises);
+    const boards = boardDocs
+      .filter(doc => doc.exists)
+      .map(doc => ({ id: doc.id, ...doc.data() }));
+    return res.status(200).json(boards);
+  } catch (error) {
+    console.error('Error getting invited boards:', error);
+    return res.status(500).json({ message: 'Failed to get invited boards' });
+  }
+};
 
 
