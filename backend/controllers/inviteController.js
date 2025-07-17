@@ -24,7 +24,7 @@ exports.inviteToBoard = async (req, res) => {
         
         let boardName = '', boardDescription = '';
         try {
-            const boardSnap = await db.collection('boards').doc(boardId).get().limit(10);
+            const boardSnap = await db.collection('boards').doc(boardId).get();
             if (boardSnap.exists) {
                 const data = boardSnap.data();
                 boardName = data.name || '';
@@ -61,7 +61,7 @@ exports.acceptInvite = async (req, res) => {
         return res.status(500).json({ message: 'Xác nhận lời mời thất bại' });
     }
 };
-
+// Lay danh sach member(email) da duoc moi
 exports.getInvitedEmails = async (req, res) => {
     const boardId = req.params.boardId;
     try {
@@ -69,5 +69,25 @@ exports.getInvitedEmails = async (req, res) => {
         res.json(emails);
     } catch (err) {
         res.status(500).json({ error: "Failed to fetch invited emails" });
+    }
+};
+
+//Lay danh sach member (email + name + image) da duoc moi voi status accepted
+exports.getAcceptedMembers = async (req, res) => {
+    const boardId = req.params.boardId;
+    try {
+        const snapshot = await db.collection("invitations")
+            .where("board_id", "==", boardId)
+            .where("status", "==", "accepted")
+            .limit(100)
+            .get();
+        const emails = snapshot.docs.map(doc => doc.data().email_member);
+        // lay thong tin tu emails
+        const userModel = require("../models/userModel");
+        const members = await Promise.all(emails.map(email => userModel.getUser(email)));
+        res.json(members.filter(Boolean)); 
+    } catch (err) {
+        console.error('Error in getAcceptedMembers:', err);
+        res.status(500).json({ error: "Failed to fetch accepted members" });
     }
 };

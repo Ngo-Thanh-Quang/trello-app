@@ -65,7 +65,7 @@ const Notifications = () => {
                             <div>
                                 <div>You have been invited to board <span className="font-semibold">{invite.board_name}</span></div>
                                 <div>Description: <span className="italic">{invite.board_description}</span></div>
-                                <div>Board owner: {invite.email_member}</div>
+                                <div>Board owner: {invite.board_owner_id}</div>
                                 <div>Status: <span className="italic">{invite.status}</span></div>
                             </div>
                             <div className="flex gap-2">

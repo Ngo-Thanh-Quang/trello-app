@@ -354,7 +354,7 @@ const Card = () => {
                     <div className="mb-4">
                       <div className="font-semibold mb-2">Select emails to invite:</div>
                       <div className="max-h-40 overflow-y-auto border rounded p-2">
-                        {allUsers.length === 0 ? (
+                        {allUsers.length === 0 || allUsers.filter(email => email !== board.board_owner_id && !alreadyInvited.includes(email)).length === 0 ? (
                           <div>No users available to invite.</div>
                         ) : (
                           allUsers
