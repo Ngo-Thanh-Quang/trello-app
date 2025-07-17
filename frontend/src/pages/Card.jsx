@@ -50,7 +50,11 @@ const Card = () => {
       setAlreadyInvited([]);
     }
   };
-  fetchInvitedEmails();
+  useEffect(() => {
+    if (showInvite) {
+      fetchInvitedEmails();
+    }
+  }, [showInvite, boardId]);
 
   const sendInvites = async (emails) => {
     const token = localStorage.getItem("tokenLogin");

@@ -24,7 +24,7 @@ exports.inviteToBoard = async (req, res) => {
         
         let boardName = '', boardDescription = '';
         try {
-            const boardSnap = await db.collection('boards').doc(boardId).get();
+            const boardSnap = await db.collection('boards').doc(boardId).get().limit(10);
             if (boardSnap.exists) {
                 const data = boardSnap.data();
                 boardName = data.name || '';
