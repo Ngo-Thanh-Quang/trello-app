@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useOutletContext } from "react-router";
 import Card from "../pages/Card";
 import { useNavigate } from "react-router-dom";
@@ -12,23 +12,23 @@ const Dashboard = () => {
     handleEditBoard,
     handleDeleteBoard,
   } = useOutletContext() || {};
-  const [showEditModal, setShowEditModal] = React.useState(false);
-  const [showDeleteModal, setShowDeleteModal] = React.useState(false);
-  const [editBoardData, setEditBoardData] = React.useState({ id: '', name: '', description: '' });
-  const [deleteBoardId, setDeleteBoardId] = React.useState(null);
-  const [boardMembers, setBoardMembers] = React.useState({});
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [editBoardData, setEditBoardData] = useState({ id: '', name: '', description: '' });
+  const [deleteBoardId, setDeleteBoardId] = useState(null);
+  const [boardMembers, setBoardMembers] = useState({});
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const navigate = useNavigate();
 
-  React.useEffect(() => {
+  useEffect(() => {
     // Lấy members cho tất cả boards
     const fetchMembers = async () => {
       const result = {};
       await Promise.all(
         boards.map(async (board) => {
           try {
-            const res = await fetch(`/api/boards/${board.id}/accepted-members`);
+            const res = await fetch(`${backendUrl}/boards/${board.id}/accepted-members`);
             const members = await res.json();
-            console.log(`Board ${board.id} accepted members:`, members);
             result[board.id] = members;
           } catch (e) {
             result[board.id] = [];

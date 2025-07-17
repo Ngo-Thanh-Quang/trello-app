@@ -72,7 +72,7 @@ exports.getInvitedEmails = async (req, res) => {
     }
 };
 
-//Lay danh sach member (email + name + image) da duoc moi
+//Lay danh sach member (email + name + image) da duoc moi voi status accepted
 exports.getAcceptedMembers = async (req, res) => {
     const boardId = req.params.boardId;
     try {
@@ -87,6 +87,7 @@ exports.getAcceptedMembers = async (req, res) => {
         const members = await Promise.all(emails.map(email => userModel.getUser(email)));
         res.json(members.filter(Boolean)); 
     } catch (err) {
+        console.error('Error in getAcceptedMembers:', err);
         res.status(500).json({ error: "Failed to fetch accepted members" });
     }
 };
