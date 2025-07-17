@@ -40,6 +40,8 @@ const Card = () => {
   const [allUsers, setAllUsers] = useState([]);
   const [inviteEmails, setInviteEmails] = useState([]);
   const [alreadyInvited, setAlreadyInvited] = useState([]);
+  const [owner, setOwner] = useState("");
+  const [currentUser, setCurrentUser] = useState("");
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -70,6 +72,7 @@ const Card = () => {
       setAlreadyInvited([]);
     }
   };
+
   useEffect(() => {
     if (showInvite) {
       fetchInvitedEmails();
@@ -299,6 +302,8 @@ const Card = () => {
         });
 
         setBoards(boardRes.data);
+        setOwner(boardRes.data.userEmail);
+        console.log("owner: ", boardRes.data.userEmail);
 
         const boardList = await Promise.all(
           cardsRes.data.map(async (card) => {
@@ -321,8 +326,28 @@ const Card = () => {
         console.error("Error fetching board/cards:", err);
       }
     };
-
     fetchBoardAndCards();
+
+    const fetchCurrentUser = async () => {
+      try {
+        const token = localStorage.getItem("tokenLogin");
+        const res = await axios.get(`${backendUrl}/profile`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (res.status === 200) {
+          setCurrentUser(res.data.user.email);
+          console.log("current:", res.data.user.email);
+        } else {
+          console.error("Failed to fetch user profile");
+        }
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+        setUser(null);
+      }
+    };
+    fetchCurrentUser();
 
     const fetchUsers = async () => {
       try {
@@ -396,7 +421,7 @@ const Card = () => {
                         {allUsers.length === 0 ||
                         allUsers.filter(
                           (email) =>
-                            email !== board.board_owner_id &&
+                            email !== board.userEmail &&
                             !alreadyInvited.includes(email)
                         ).length === 0 ? (
                           <div>No users available to invite.</div>
@@ -483,32 +508,34 @@ const Card = () => {
                     key={card.id}
                     className="w-64 flex-shrink-0 bg-gray-100 rounded-lg shadow p-3 relative border border-gray-100 hover:border-gray-200 cursor-pointer"
                   >
-                    <div className="absolute right-3 top-3 cursor-pointer text-gray-500 close">
-                      <FaEllipsisV onClick={() => setSelectCard(card.id)} />
+                    {currentUser === owner && (
+                      <div className="absolute right-3 top-3 cursor-pointer text-gray-500 close">
+                        <FaEllipsisV onClick={() => setSelectCard(card.id)} />
 
-                      {selectCard === card.id && (
-                        <div className="absolute top-full right-0 mt-2 bg-white rounded shadow-md z-10 min-w-[120px]">
-                          <button
-                            className="flex gap-2 items-center w-full cursor-pointer text-left px-4 py-2 hover:bg-gray-100"
-                            onClick={() => {
-                              setCardTitle(card.title);
-                              setEdit(true);
-                            }}
-                          >
-                            <FaEdit /> Edit
-                          </button>
-                          <button
-                            className="flex gap-2 items-center w-full cursor-pointer text-left px-4 py-2 hover:bg-gray-100"
-                            onClick={() => {
-                              deleteCard(card.id);
-                              setSelectCard(null);
-                            }}
-                          >
-                            <FaTrashAlt /> Delete
-                          </button>
-                        </div>
-                      )}
-                    </div>
+                        {selectCard === card.id && (
+                          <div className="absolute top-full right-0 mt-2 bg-white rounded shadow-md z-10 min-w-[120px]">
+                            <button
+                              className="flex gap-2 items-center w-full cursor-pointer text-left px-4 py-2 hover:bg-gray-100"
+                              onClick={() => {
+                                setCardTitle(card.title);
+                                setEdit(true);
+                              }}
+                            >
+                              <FaEdit /> Edit
+                            </button>
+                            <button
+                              className="flex gap-2 items-center w-full cursor-pointer text-left px-4 py-2 hover:bg-gray-100"
+                              onClick={() => {
+                                deleteCard(card.id);
+                                setSelectCard(null);
+                              }}
+                            >
+                              <FaTrashAlt /> Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     <h4
                       onClick={() => {
@@ -557,25 +584,29 @@ const Card = () => {
                                       >
                                         <FaInfoCircle /> Detail
                                       </button>
-                                      <button
-                                        className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center cursor-pointer gap-2"
-                                        onClick={() => {
-                                          setEditTask(true);
-                                          setTaskTitle(task.title);
-                                          setTaskId(null);
-                                        }}
-                                      >
-                                        <FaEdit /> Edit
-                                      </button>
-                                      <button
-                                        className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center cursor-pointer gap-2"
-                                        onClick={() => {
-                                          deleteTask(task.id, card.id);
-                                          setTaskId(null);
-                                        }}
-                                      >
-                                        <FaTrashAlt /> Delete
-                                      </button>
+                                      {currentUser === owner && (
+                                        <div>
+                                          <button
+                                            className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center cursor-pointer gap-2"
+                                            onClick={() => {
+                                              setEditTask(true);
+                                              setTaskTitle(task.title);
+                                              setTaskId(null);
+                                            }}
+                                          >
+                                            <FaEdit /> Edit
+                                          </button>
+                                          <button
+                                            className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center cursor-pointer gap-2"
+                                            onClick={() => {
+                                              deleteTask(task.id, card.id);
+                                              setTaskId(null);
+                                            }}
+                                          >
+                                            <FaTrashAlt /> Delete
+                                          </button>
+                                        </div>
+                                      )}
                                     </div>
                                   )}
                                 </div>
@@ -602,22 +633,26 @@ const Card = () => {
                         </button>
                       </div>
                     ) : (
-                      <button
-                        onClick={() => setSelectTask(card.id)}
-                        className="mt-2 w-full cursor-pointer rounded-lg p-2 text-left flex items-center gap-2 hover:bg-gray-300"
-                      >
-                        <FaPlus className="text-sm" /> Add a task
-                      </button>
+                      currentUser === owner && (
+                        <button
+                          onClick={() => setSelectTask(card.id)}
+                          className="mt-2 w-full cursor-pointer rounded-lg p-2 text-left flex items-center gap-2 hover:bg-gray-300"
+                        >
+                          <FaPlus className="text-sm" /> Add a task
+                        </button>
+                      )
                     )}
                   </div>
                 ))}
 
-                <button
-                  onClick={() => setForm(true)}
-                  className="w-64 flex-shrink-0 gap-2 bg-gray-100 hover:bg-gray-200 rounded-lg shadow p-2 flex items-center justify-center cursor-pointer"
-                >
-                  <FaPlus className="text-sm" /> Add another card
-                </button>
+                {currentUser === owner && (
+                  <button
+                    onClick={() => setForm(true)}
+                    className="w-64 flex-shrink-0 gap-2 bg-gray-100 hover:bg-gray-200 rounded-lg shadow p-2 flex items-center justify-center cursor-pointer"
+                  >
+                    <FaPlus className="text-sm" /> Add another card
+                  </button>
+                )}
               </div>
             </DragDropContext>
           ) : (
@@ -625,12 +660,14 @@ const Card = () => {
               <div className="text-center text-gray-500 mb-5">
                 No cards available. Click the button below to create a new card.
               </div>
-              <button
-                onClick={() => setForm(true)}
-                className="w-64 flex-shrink-0 gap-2 bg-gray-100 hover:bg-gray-200 rounded-lg shadow p-2 flex items-center justify-center cursor-pointer"
-              >
-                <FaPlus className="text-sm" /> Add another card
-              </button>
+              {currentUser === owner && (
+                <button
+                  onClick={() => setForm(true)}
+                  className="w-64 flex-shrink-0 gap-2 bg-gray-100 hover:bg-gray-200 rounded-lg shadow p-2 flex items-center justify-center cursor-pointer"
+                >
+                  <FaPlus className="text-sm" /> Add another card
+                </button>
+              )}
             </div>
           )}
           {/* Creating a new card */}
@@ -749,7 +786,7 @@ const Card = () => {
                   className="p-2"
                   name="members"
                   value={taskAssignee}
-                  onChange={(e) => setTaskAssginee(e.target.value)} // <- ĐÚNG
+                  onChange={(e) => setTaskAssginee(e.target.value)}
                 >
                   {boardMembers[boardId] &&
                     boardMembers[boardId].length > 0 &&
@@ -841,7 +878,7 @@ const Card = () => {
                   </div>
                   <div>
                     <p className="p-2 text-gray-600 font-semibold italic capitalize">
-                      {taskAssignee}
+                      {taskAssignee || "Unassigned"}
                     </p>
                     <p className="p-2 text-gray-600 font-semibold italic capitalize">
                       {taskTitle}

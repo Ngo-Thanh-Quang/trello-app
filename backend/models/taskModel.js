@@ -11,7 +11,8 @@ exports.getTasksByCardId = async (cardId) => {
 exports.createTask = async (cardId, content) => {
   const newTask = {
     cardId,
-    title: content, 
+    title: content,
+    assignee: "", 
     description: "",
     status: "To do",
     createdAt: new Date().toISOString(),
