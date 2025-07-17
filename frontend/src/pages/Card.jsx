@@ -315,7 +315,7 @@ const Card = () => {
   }, [boardId]);
 
   return (
-    <div className="absolute top-20 left-64 right-0 bottom-0 bg-white p-6 overflow-auto">
+    <div className="absolute top-20 left-0 md:left-64 right-0 bottom-0 bg-white p-6 overflow-auto">
       <button
         className="px-5 py-2 flex gap-2 cursor-pointer items-center text-base bg-blue-400 hover:bg-blue-600 text-white rounded-lg font-semibold mb-4"
         onClick={() => navigate("/")}
@@ -331,7 +331,7 @@ const Card = () => {
         <div>
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h3 className="font-bold py-2 text-2xl text-blue-700 capitalize">
+              <h3 className="font-bold py-2 text-lg md:text-2xl text-blue-700 capitalize">
                 {board.name}
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -339,7 +339,7 @@ const Card = () => {
               </div>
               {showInvite && (
                 <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-20">
-                  <div className="bg-white p-6 rounded-lg shadow-lg w-96 relative">
+                  <div className="bg-white p-6 rounded-lg shadow-lg w-75 sm:w-96 relative">
                     <div
                       className="absolute flex right-3 top-2 cursor-pointer"
                       onClick={() => setShowInvite(false)}
@@ -394,31 +394,31 @@ const Card = () => {
                 </div>
               )}
             </div>
-            <div className="flex -space-x-2 overflow-hidden">
+            <div className="flex -space-x-2">
               <button
-                className="w-16 flex-shrink-0 gap-2 bg-gray-100 hover:bg-gray-200 rounded-lg shadow p-2 flex items-center justify-center cursor-pointer"
+                className="w-10 md:w-16 flex-shrink-0 gap-2 bg-gray-100 hover:bg-gray-200 rounded-lg shadow p-2 flex items-center justify-center cursor-pointer"
                 onClick={() => setShowInvite(true)}
               >
                 <FaPlus />
               </button>
               <img
-                className="inline-block size-10 rounded-full ring-2 ring-white cursor-pointer"
+                className="inline-block size-8 md:size-10 rounded-full ring-2 ring-white cursor-pointer"
                 src="https://www.vietnamworks.com/hrinsider/wp-content/uploads/2023/12/anh-den-ngau.jpeg"
                 alt=""
               />
               <img
-                className="inline-block size-10 rounded-full ring-2 ring-white cursor-pointer"
+                className="inline-block size-8 md:size-10 rounded-full ring-2 ring-white cursor-pointer"
                 src="https://images.unsplash.com/photo-1550525811-e5869dd03032?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
                 alt=""
                 onClick={() => navigate("/")}
               />
               <img
-                className="inline-block size-10 rounded-full ring-2 ring-white cursor-pointer"
+                className="inline-block size-8 md:size-10 rounded-full ring-2 ring-white cursor-pointer"
                 src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2.25&w=256&h=256&q=80"
                 alt=""
               />
               <img
-                className="inline-block size-10 rounded-full ring-2 ring-white cursor-pointer"
+                className="inline-block size-8 md:size-10 rounded-full ring-2 ring-white cursor-pointer"
                 src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
                 alt=""
               />
@@ -570,7 +570,7 @@ const Card = () => {
             </DragDropContext>
           ) : (
             <div>
-              <div className="text-center text-gray-500">
+              <div className="text-center text-gray-500 mb-5">
                 No cards available. Click the button below to create a new card.
               </div>
               <button
@@ -584,7 +584,7 @@ const Card = () => {
           {/* Creating a new card */}
           {form && (
             <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-10">
-              <div className="bg-white p-6 rounded-lg shadow-lg w-96 relative close">
+              <div className="bg-white p-6 rounded-lg shadow-lg w-75 sm:w-96 relative close">
                 <div
                   className="absolute flex right-3 top-2 cursor-pointer"
                   onClick={() => setForm(false)}
@@ -613,7 +613,7 @@ const Card = () => {
           {/* Edit card */}
           {edit && (
             <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-10">
-              <div className="bg-white p-6 rounded-lg shadow-lg w-96 relative close">
+              <div className="bg-white p-6 rounded-lg shadow-lg w-75 sm:w-96 relative close">
                 <div
                   className="absolute flex right-3 top-2 cursor-pointer"
                   onClick={() => {
@@ -644,7 +644,7 @@ const Card = () => {
           {/* Card detail*/}
           {detail && (
             <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-10">
-              <div className="bg-white p-6 rounded-lg shadow-lg w-96 relative close">
+              <div className="bg-white p-6 rounded-lg shadow-lg w-75 sm:w-96 relative close">
                 <div
                   className="absolute flex right-3 top-2 cursor-pointer"
                   onClick={() => showDetail(false)}
@@ -674,7 +674,7 @@ const Card = () => {
           {/* Edit task */}
           {editTask && (
             <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-10">
-              <div className="bg-white p-6 rounded-lg shadow-lg w-96 relative close">
+              <div className="bg-white p-6 rounded-lg shadow-lg w-75 sm:w-96 relative close">
                 <div
                   className="absolute flex right-3 top-2 cursor-pointer"
                   onClick={() => {
@@ -755,7 +755,7 @@ const Card = () => {
           {/* Task detail */}
           {detailTask && (
             <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-10">
-              <div className="bg-white p-6 rounded-lg shadow-lg w-96 relative close">
+              <div className="bg-white p-6 rounded-lg shadow-lg w-75 sm:w-96 relative close">
                 <div
                   className="absolute flex right-3 top-2 cursor-pointer"
                   onClick={() => {

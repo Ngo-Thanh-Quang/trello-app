@@ -4,11 +4,15 @@ import { Outlet } from "react-router";
 import Sidebar from "../components/Sidebar";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { FaBars, FaTimes } from "react-icons/fa";
 
 const BoardPage = ({ token }) => {
   const [boards, setBoards] = useState([]);
   const [selectedBoardId, setSelectedBoardId] = useState(null);
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
+  const [newBoard, setNewBoard] = useState({ name: "", description: "" });
 
   // danh sach bang
   const fetchBoards = async () => {
@@ -21,6 +25,25 @@ const BoardPage = ({ token }) => {
       setBoards(res.data);
     } catch {
       setBoards([]);
+    }
+  };
+
+  const handleCreateBoard = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem("tokenLogin");
+
+    try {
+      const res = await axios.post(`${backendUrl}/boards`, newBoard, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      toast.success("Create new board successfully!");
+      setShowCreate(false);
+      setNewBoard({ name: "", description: "" });
+      fetchBoards();
+    } catch (err) {
+      console.error("Error creating board:", err);
+      toast.error("Failed to create board. Please try again.");
     }
   };
 
@@ -74,6 +97,14 @@ const BoardPage = ({ token }) => {
 
   return (
     <>
+      <div className="md:hidden fixed top-5 right-4 z-50">
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="text-white p-2 text-2xl"
+        >
+          {sidebarOpen ? <FaTimes /> : <FaBars />}
+        </button>
+      </div>
       <Sidebar
         boards={boards}
         fetchBoards={fetchBoards}
@@ -81,8 +112,11 @@ const BoardPage = ({ token }) => {
         selectedBoardId={selectedBoardId}
         handleEditBoard={handleEditBoard}
         handleDeleteBoard={handleDeleteBoard}
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        setShowCreate={setShowCreate}
       />
-      <div className="ml-64 pt-20">
+      <div className="md:ml-64 pt-20 transition-all duration-300">
         <Outlet
           context={{
             boards,
@@ -93,6 +127,48 @@ const BoardPage = ({ token }) => {
           }}
         />
       </div>
+      {showCreate && (
+        <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
+          <form
+            className="bg-white p-6 rounded shadow-md w-72 sm:w-96 text-gray-800"
+            onSubmit={handleCreateBoard}
+          >
+            <h2 className="text-xl font-bold mb-4">Create Board</h2>
+            <input
+              className="w-full mb-3 p-2 border rounded"
+              placeholder="Board Name"
+              value={newBoard.name}
+              onChange={(e) =>
+                setNewBoard({ ...newBoard, name: e.target.value })
+              }
+              required
+            />
+            <textarea
+              className="w-full mb-3 p-2 border rounded"
+              placeholder="Board Description"
+              value={newBoard.description}
+              onChange={(e) =>
+                setNewBoard({ ...newBoard, description: e.target.value })
+              }
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-black rounded"
+                onClick={() => setShowCreate(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded"
+              >
+                Create
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </>
   );
 };

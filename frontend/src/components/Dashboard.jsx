@@ -19,7 +19,7 @@ const Dashboard = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <main className="flex-1 ml-8 flex flex-col pt-10 min-h-screen">
+      <main className="flex-1 ml-5 flex flex-col pt-10 min-h-screen">
         <div className="flex-1 p-2 sm:p-3 md:p-4 lg:p-5 xl:p-6">
           <h2 className="text-2xl font-bold mb-4">Your Boards</h2>
           {/* Bdanh sach */}
