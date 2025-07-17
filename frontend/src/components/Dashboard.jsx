@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useOutletContext } from "react-router";
 import Card from "../pages/Card";
 import { useNavigate } from "react-router-dom";
@@ -12,11 +12,33 @@ const Dashboard = () => {
     handleEditBoard,
     handleDeleteBoard,
   } = useOutletContext() || {};
-  const [showEditModal, setShowEditModal] = React.useState(false);
-  const [showDeleteModal, setShowDeleteModal] = React.useState(false);
-  const [editBoardData, setEditBoardData] = React.useState({ id: '', name: '', description: '' });
-  const [deleteBoardId, setDeleteBoardId] = React.useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [editBoardData, setEditBoardData] = useState({ id: '', name: '', description: '' });
+  const [deleteBoardId, setDeleteBoardId] = useState(null);
+  const [boardMembers, setBoardMembers] = useState({});
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Lấy members cho tất cả boards
+    const fetchMembers = async () => {
+      const result = {};
+      await Promise.all(
+        boards.map(async (board) => {
+          try {
+            const res = await fetch(`${backendUrl}/boards/${board.id}/accepted-members`);
+            const members = await res.json();
+            result[board.id] = members;
+          } catch (e) {
+            result[board.id] = [];
+          }
+        })
+      );
+      setBoardMembers(result);
+    };
+    if (boards.length > 0) fetchMembers();
+  }, [boards]);
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -40,7 +62,13 @@ const Dashboard = () => {
                       {board.description || <span className="italic text-gray-400">No description</span>}
                     </p>
                     <p className="text-gray-600 group-hover:text-gray-800 transition-colors min-h-[32px]">
-                      <span className="italic text-gray-400">Members: No one</span>
+                      {boardMembers[board.id] && boardMembers[board.id].length > 0 ? (
+                        <span>
+                          Members: {boardMembers[board.id].map(m => m.name || m.email).join(', ')}
+                        </span>
+                      ) : (
+                        <span className="italic text-gray-400">Members: No one</span>
+                      )}
                     </p>
 
                     <div

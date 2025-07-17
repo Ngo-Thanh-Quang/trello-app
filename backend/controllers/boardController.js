@@ -111,10 +111,10 @@ exports.deleteBoard = async (req, res) => {
   }
 };
 
-// Lấy các board mà user là member với status accepted
+// Hien thi phan board da duoc moi va da chap nhan
 exports.getBoardsInvitedAccepted = async (req, res) => {
   try {
-    // Lấy các invitation có email_member là user hiện tại và status accepted
+    // Lay trong db invitations co emailmember la user hien tai voi stauts accepted
     const email = req.userEmail;
     const inviteSnapshot = await db.collection('invitations')
       .where('email_member', '==', email)

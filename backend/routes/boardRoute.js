@@ -17,5 +17,6 @@ router.post('/:boardId/invite', authToken, inviteController.inviteToBoard);
 // router.post('/:boardId/cards/:id/invite/accept', authToken, inviteController.acceptInvite);
 router.post('/:boardId/invite/accept', authToken, inviteController.acceptInvite);
 router.get('/:boardId/invited-emails', inviteController.getInvitedEmails);
+router.get('/:boardId/accepted-members', inviteController.getAcceptedMembers);
 
 module.exports = router;
