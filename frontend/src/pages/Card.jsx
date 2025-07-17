@@ -358,7 +358,7 @@ const Card = () => {
                           <div>No users available to invite.</div>
                         ) : (
                           allUsers
-                            .filter(email => email !== board.board_owner_id && !alreadyInvited.includes(email))
+                            .filter(email => email !== board.userEmail && !alreadyInvited.includes(email))
                             .map((email) => (
                               <label key={email} className="flex items-center gap-2 mb-1">
                                 <input
@@ -408,22 +408,6 @@ const Card = () => {
               <img
                 className="inline-block size-8 md:size-10 rounded-full ring-2 ring-white cursor-pointer"
                 src="https://www.vietnamworks.com/hrinsider/wp-content/uploads/2023/12/anh-den-ngau.jpeg"
-                alt=""
-              />
-              <img
-                className="inline-block size-8 md:size-10 rounded-full ring-2 ring-white cursor-pointer"
-                src="https://images.unsplash.com/photo-1550525811-e5869dd03032?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                alt=""
-                onClick={() => navigate("/")}
-              />
-              <img
-                className="inline-block size-8 md:size-10 rounded-full ring-2 ring-white cursor-pointer"
-                src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2.25&w=256&h=256&q=80"
-                alt=""
-              />
-              <img
-                className="inline-block size-8 md:size-10 rounded-full ring-2 ring-white cursor-pointer"
-                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
                 alt=""
               />
             </div>
