@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import {
   FaLongArrowAltLeft,
   FaPlus,
@@ -11,372 +11,93 @@ import {
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import { useCard } from "../hooks/useCard";
 
 const Card = () => {
-  const [boardMembers, setBoardMembers] = useState({});
   const { boardId } = useParams();
-  const navigate = useNavigate();
-  const [board, setBoards] = useState([]);
-  const backendUrl = import.meta.env.VITE_BACKEND_URL;
-  const [loading, setLoading] = useState(true);
-  const [card, setCard] = useState([]);
-  const [form, setForm] = useState(false);
-  const [title, setTitle] = useState("");
-  const [edit, setEdit] = useState(false);
-  const [selectCard, setSelectCard] = useState(null);
-  const [cardTitle, setCardTitle] = useState("");
-  const [detail, showDetail] = useState(false);
-  const [create, setCreate] = useState("");
-  const [selectTask, setSelectTask] = useState(null);
-  const [newTask, setNewTask] = useState("");
-  const [taskId, setTaskId] = useState(null);
-  const [editTask, setEditTask] = useState(false);
-  const [taskTitle, setTaskTitle] = useState("");
-  const [taskDescription, setTaskDescription] = useState("");
-  const [taskStatus, setTaskStatus] = useState("");
-  const [taskAssignee, setTaskAssginee] = useState("");
-  const [detailTask, setDetailTask] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
-  const [allUsers, setAllUsers] = useState([]);
+  const navigate = useNavigate();
+  const [form, setForm] = useState(false);
+  const [selectCard, setSelectCard] = useState(null);
+  const [createTask, openCreateTask] = useState(null);
+  const [taskId, setTaskId] = useState(null);
+  const [detail, showDetail] = useState(false);
+  const [edit, setEdit] = useState(false);
+  const [editTask, setEditTask] = useState(false);
+  const [showDetailTask, setShowDetailTask] = useState(false);
   const [inviteEmails, setInviteEmails] = useState([]);
-  const [alreadyInvited, setAlreadyInvited] = useState([]);
-  const [owner, setOwner] = useState("");
-  const [currentUser, setCurrentUser] = useState("");
 
-  useEffect(() => {
-    const fetchMembers = async () => {
-      try {
-        const res = await fetch(
-          `${backendUrl}/boards/${boardId}/accepted-members`
-        );
-        const members = await res.json();
-        setBoardMembers({ [boardId]: members });
-      } catch (e) {
-        setBoardMembers({ [boardId]: [] });
-      }
-    };
-    if (boardId) fetchMembers();
-  }, [boardId, backendUrl]);
+  const {
+    loading,
+    boardMembers,
+    board,
+    cards,
+    setCards,
+    owner,
+    cardTitle,
+    setCardTitle,
+    create,
+    currentUser,
+    allUsers,
+    alreadyInvited,
+    taskAssignee,
+    setTaskAssignee,
+    taskStatus,
+    setTaskStatus,
+    taskDescription,
+    setTaskDescription,
+    taskTitle,
+    setTaskTitle,
+    setAlreadyInvited,
+    detailCard,
+    addCard,
+    updateCard,
+    deleteCard,
+    onDragEnd,
+    detailTask,
+    deleteTask,
+    addTask,
+    updateTask,
+    sendInvites,
+  } = useCard(boardId, showInvite);
 
-  const fetchInvitedEmails = async () => {
-    try {
-      const token = localStorage.getItem("tokenLogin");
-      const res = await axios.get(
-        `${backendUrl}/boards/${boardId}/invited-emails`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setAlreadyInvited(res.data);
-    } catch (err) {
-      setAlreadyInvited([]);
-    }
-  };
-
-  useEffect(() => {
-    if (showInvite) {
-      fetchInvitedEmails();
-    }
-  }, [showInvite, boardId]);
-
-  const sendInvites = async (emails) => {
-    const token = localStorage.getItem("tokenLogin");
-    await Promise.all(
-      emails.map((email) =>
-        axios.post(
-          `${backendUrl}/boards/${boardId}/invite`,
-          {
-            member_id: Date.now().toString(),
-            email_member: email,
-            status: "pending",
-          },
-          { headers: { Authorization: `Bearer ${token}` } }
-        )
-      )
-    );
-  };
-
-  const onDragEnd = async (result) => {
-    const { source, destination, draggableId } = result;
-
-    if (!destination) return;
-
-    const sourceCard = card.find((card) => card.id === source.droppableId);
-    const destCard = card.find((card) => card.id === destination.droppableId);
-
-    const sourceTasks = [...sourceCard.tasks];
-    const [movedTask] = sourceTasks.splice(source.index, 1);
-
-    if (source.droppableId === destination.droppableId) {
-      sourceTasks.splice(destination.index, 0, movedTask);
-      const updatedCard = card.map((card) =>
-        card.id === sourceCard.id ? { ...card, tasks: sourceTasks } : card
-      );
-      setCard(updatedCard);
-    } else {
-      const destTasks = [...destCard.tasks];
-      destTasks.splice(destination.index, 0, movedTask);
-      const updatedCard = card.map((card) => {
-        if (card.id === sourceCard.id) return { ...card, tasks: sourceTasks };
-        if (card.id === destCard.id) return { ...card, tasks: destTasks };
-        return card;
-      });
-      setCard(updatedCard);
-
-      try {
-        const token = localStorage.getItem("tokenLogin");
-        await axios.put(
-          `${backendUrl}/tasks/update-card/${draggableId}`,
-          { cardId: destination.droppableId },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-      } catch (err) {
-        console.error("Failed to move task:", err);
-      }
-    }
-  };
-
-  const addCard = async () => {
-    if (!title) return;
-
-    setTitle("");
+  const handleAddCard = async () => {
+    if (!cardTitle.trim()) return;
+    await addCard(boardId, cardTitle);
+    setCardTitle("");
     setForm(false);
-    try {
-      const token = localStorage.getItem("tokenLogin");
-      const res = await axios.post(
-        `${backendUrl}/cards`,
-        { boardId, title },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      const newCard = {
-        id: res.data.id,
-        title: res.data.title,
-        createdAt: res.data.createdAt,
-        tasks: [],
-      };
-      setCard([...card, newCard]);
-      toast.success("Card created successfully");
-    } catch (err) {
-      console.error("Error creating card:", err);
-    }
   };
-
-  const updateCard = async () => {
-    if (!cardTitle) return;
-
+  const handleUpdateCard = async () => {
+    if (!cardTitle.trim()) return;
+    await updateCard(selectCard, cardTitle);
     setCardTitle("");
     setEdit(false);
-    try {
-      const token = localStorage.getItem("tokenLogin");
-      await axios.put(
-        `${backendUrl}/cards/${selectCard}`,
-        { title: cardTitle },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      const updatedCard = card.map((c) =>
-        c.id === selectCard ? { ...c, title: cardTitle } : c
-      );
-      setCard(updatedCard);
-      toast.success("Card updated successfully");
-      setSelectCard(null);
-    } catch (err) {
-      toast.error("Error updating card");
-      console.error("Error updating card:", err);
-    }
+    setSelectCard(null);
   };
 
-  const deleteCard = async (cardId) => {
-    try {
-      const token = localStorage.getItem("tokenLogin");
-      await axios.delete(`${backendUrl}/cards/${cardId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setCard(card.filter((c) => c.id !== cardId));
-      toast.success("Card deleted successfully");
-    } catch (err) {
-      console.error("Error deleting card:", err);
-    }
-  };
-
-  const addTask = async (cardId) => {
-    if (!newTask) return;
-    const token = localStorage.getItem("tokenLogin");
-    try {
-      const res = await axios.post(
-        `${backendUrl}/tasks/${cardId}`,
-        { content: newTask },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      const updatedCards = card.map((c) =>
-        c.id === cardId ? { ...c, tasks: [...c.tasks, res.data] } : c
-      );
-      setCard(updatedCards);
-      setNewTask("");
-      setSelectTask(null);
-      toast.success("Task created");
-    } catch (err) {
-      console.error("Failed to create task:", err);
-      toast.error("Failed to create task");
-    }
-  };
-
-  const deleteTask = async (taskDelete, cardId) => {
-    try {
-      const token = localStorage.getItem("tokenLogin");
-      await axios.delete(`${backendUrl}/tasks/delete/${taskDelete}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const updateCard = card.map((c) =>
-        c.id === cardId
-          ? { ...c, tasks: c.tasks.filter((task) => task.id !== taskDelete) }
-          : c
-      );
-
-      setCard(updateCard);
-      toast.success("Task deleted successfully");
-    } catch (err) {
-      console.error("Failed to delete task:", err);
-      toast.error("Failed to delete task");
-    }
-  };
-
-  const updateTask = async () => {
-    if (!taskTitle) return;
-    const token = localStorage.getItem("tokenLogin");
-
-    try {
-      await axios.put(
-        `${backendUrl}/tasks/update/${taskId}`,
-        {
-          title: taskTitle,
-          description: taskDescription,
-          status: taskStatus,
-          assignee: taskAssignee,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      const updatedCard = card.map((c) => ({
-        ...c,
-        tasks: c.tasks.map((t) =>
-          t.id === taskId
-            ? {
-                ...t,
-                title: taskTitle,
-                description: taskDescription,
-                status: taskStatus,
-                assignee: taskAssignee,
-              }
-            : t
-        ),
-      }));
-      setCard(updatedCard);
-
-      toast.success("Task updated successfully");
-      setEditTask(false);
-      setTaskId(null);
-      setTaskTitle("");
-      setTaskDescription("");
-      setTaskAssginee("");
-    } catch (err) {
-      toast.error("Failed to update task");
-      console.error("Update task error:", err);
-    }
+  const handleAddTask = async () => {
+    if (!taskTitle.trim()) return;
+    await addTask(createTask, taskTitle);
+    setTaskTitle("");
+    openCreateTask(null);
   };
 
   useEffect(() => {
-    const fetchBoardAndCards = async () => {
-      try {
-        const token = localStorage.getItem("tokenLogin");
-
-        const boardRes = await axios.get(`${backendUrl}/boards/${boardId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        const cardsRes = await axios.get(`${backendUrl}/cards/${boardId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        setBoards(boardRes.data);
-        setOwner(boardRes.data.userEmail);
-        console.log("owner: ", boardRes.data.userEmail);
-
-        const boardList = await Promise.all(
-          cardsRes.data.map(async (card) => {
-            const tasksRes = await axios.get(`${backendUrl}/tasks/${card.id}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            });
-
-            return {
-              id: card.id,
-              title: card.title,
-              createdAt: card.createdAt,
-              tasks: tasksRes.data,
-            };
-          })
-        );
-
-        setCard(boardList);
-        setLoading(false);
-      } catch (err) {
-        console.error("Error fetching board/cards:", err);
-      }
-    };
-    fetchBoardAndCards();
-
-    const fetchCurrentUser = async () => {
-      try {
-        const token = localStorage.getItem("tokenLogin");
-        const res = await axios.get(`${backendUrl}/profile`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (res.status === 200) {
-          setCurrentUser(res.data.user.email);
-          console.log("current:", res.data.user.email);
-        } else {
-          console.error("Failed to fetch user profile");
-        }
-      } catch (error) {
-        console.error("Error fetching user profile:", error);
-        setUser(null);
-      }
-    };
-    fetchCurrentUser();
-
-    const fetchUsers = async () => {
-      try {
-        const token = localStorage.getItem("tokenLogin");
-        const res = await axios.get(`${backendUrl}/authuser/users`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setAllUsers(res.data);
-      } catch (err) {
-        setAllUsers([]);
-      }
-    };
-    fetchUsers();
-
     const handleClose = (e) => {
       if (!e.target.closest(".close")) {
         setSelectCard(null);
-        setSelectTask(null);
+        openCreateTask(null);
         setForm(false);
         setEdit(false);
         showDetail(false);
-        setTaskId(null);
         setEditTask(false);
-        setDetailTask(false);
+        setShowDetailTask(false);
+        setTaskId(null)
       }
     };
     document.addEventListener("mousedown", handleClose);
     return () => document.removeEventListener("mousedown", handleClose);
-  }, [boardId]);
+  }, [showInvite, boardId]);
 
   return (
     <div className="absolute top-20 left-0 md:left-64 right-0 bottom-0 bg-white p-6 overflow-auto">
@@ -500,10 +221,10 @@ const Card = () => {
                 ))}
             </div>
           </div>
-          {card.length > 0 ? (
+          {cards.length > 0 ? (
             <DragDropContext onDragEnd={onDragEnd}>
               <div className="flex gap-4 overflow-x-auto pb-4 items-start">
-                {card.map((card) => (
+                {cards.map((card) => (
                   <div
                     key={card.id}
                     className="w-64 flex-shrink-0 bg-gray-100 rounded-lg shadow p-3 relative border border-gray-100 hover:border-gray-200 cursor-pointer"
@@ -538,11 +259,7 @@ const Card = () => {
                     )}
 
                     <h4
-                      onClick={() => {
-                        setCardTitle(card.title);
-                        setCreate(card.createdAt);
-                        showDetail(true);
-                      }}
+                      onClick={() => detailCard(card, showDetail)}
                       className="font-bold mb-3 capitalize"
                     >
                       {card.title}
@@ -574,11 +291,7 @@ const Card = () => {
                                       <button
                                         className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center cursor-pointer gap-2"
                                         onClick={() => {
-                                          setDetailTask(true);
-                                          setTaskAssginee(task.assignee);
-                                          setTaskTitle(task.title);
-                                          setTaskDescription(task.description);
-                                          setTaskStatus(task.status);
+                                          detailTask(task, setShowDetailTask);
                                           setTaskId(null);
                                         }}
                                       >
@@ -590,7 +303,13 @@ const Card = () => {
                                             className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center cursor-pointer gap-2"
                                             onClick={() => {
                                               setEditTask(true);
+                                              console.log("Task object:", task);
+                                              console.log(
+                                                "Task assignee:",
+                                                task.assignee
+                                              );
                                               setTaskTitle(task.title);
+                                              setTaskAssignee(task.assignee);
                                               setTaskId(null);
                                             }}
                                           >
@@ -617,17 +336,17 @@ const Card = () => {
                         </div>
                       )}
                     </Droppable>
-                    {selectTask === card.id ? (
+                    {createTask === card.id ? (
                       <div className="mt-2 close">
                         <input
                           className="input p-2 mb-2 bg-white w-full"
                           placeholder="Task title"
-                          value={newTask}
-                          onChange={(e) => setNewTask(e.target.value)}
+                          value={taskTitle}
+                          onChange={(e) => setTaskTitle(e.target.value)}
                         />
                         <button
                           className="w-[40%] cursor-pointer font-medium rounded-lg p-2 text-center flex items-center gap-2 text-white bg-blue-600 transition hover:bg-blue-500"
-                          onClick={() => addTask(card.id)}
+                          onClick={() => handleAddTask(card.id, taskTitle)}
                         >
                           Add Task
                         </button>
@@ -635,7 +354,7 @@ const Card = () => {
                     ) : (
                       currentUser === owner && (
                         <button
-                          onClick={() => setSelectTask(card.id)}
+                          onClick={() => openCreateTask(card.id)}
                           className="mt-2 w-full cursor-pointer rounded-lg p-2 text-left flex items-center gap-2 hover:bg-gray-300"
                         >
                           <FaPlus className="text-sm" /> Add a task
@@ -685,13 +404,13 @@ const Card = () => {
                 </h2>
                 <input
                   type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  value={cardTitle}
+                  onChange={(e) => setCardTitle(e.target.value)}
                   placeholder="Enter card title"
                   className="input mb-4 w-full focus:outline-none"
                 />
                 <button
-                  onClick={addCard}
+                  onClick={handleAddCard}
                   className="bg-blue-500 text-white font-semibold cursor-pointer w-full py-2 rounded hover:bg-blue-600"
                 >
                   Confirm
@@ -722,7 +441,7 @@ const Card = () => {
                   className="input mb-4 w-full focus:outline-none"
                 />
                 <button
-                  onClick={updateCard}
+                  onClick={handleUpdateCard}
                   className="bg-blue-500 text-white font-semibold cursor-pointer w-full py-2 rounded hover:bg-blue-600"
                 >
                   Confirm
@@ -771,7 +490,7 @@ const Card = () => {
                     setTaskId(null);
                     setTaskTitle("");
                     setTaskDescription("");
-                    setTaskAssginee("");
+                    setTaskAssignee("");
                   }}
                 >
                   <i className="fa-solid fa-xmark"></i>
@@ -786,8 +505,9 @@ const Card = () => {
                   className="p-2"
                   name="members"
                   value={taskAssignee}
-                  onChange={(e) => setTaskAssginee(e.target.value)}
+                  onChange={(e) => setTaskAssignee(e.target.value)}
                 >
+                  <option value="">Select assignee</option>
                   {boardMembers[boardId] &&
                     boardMembers[boardId].length > 0 &&
                     boardMembers[boardId].map((m, idx) => (
@@ -846,7 +566,26 @@ const Card = () => {
                   className="input p-2 mb-4 w-full border-b border-gray-300 focus:outline-none"
                 />
                 <button
-                  onClick={updateTask}
+                  onClick={() => {
+                    const taskData = {
+                      title: taskTitle,
+                      description: taskDescription,
+                      status: taskStatus,
+                      assignee: taskAssignee,
+                    };
+                    const card = cards.find((c) =>
+                      c.tasks.some((t) => t.id === taskId)
+                    );
+                    if (card) {
+                      console.log("Sending taskData", taskData);
+                      updateTask(taskId, card.id, taskData);
+                      setEditTask(false);
+                      setTaskId(null);
+                      setTaskTitle("");
+                      setTaskDescription("");
+                      setTaskAssignee("");
+                    }
+                  }}
                   className="bg-blue-500 text-white font-semibold cursor-pointer w-full py-2 rounded hover:bg-blue-600"
                 >
                   Confirm
@@ -855,13 +594,13 @@ const Card = () => {
             </div>
           )}
           {/* Task detail */}
-          {detailTask && (
+          {showDetailTask && (
             <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-10">
               <div className="bg-white p-6 rounded-lg shadow-lg w-75 sm:w-96 relative close">
                 <div
                   className="absolute flex right-3 top-2 cursor-pointer"
                   onClick={() => {
-                    setDetailTask(false), setTaskId(null);
+                    setShowDetailTask(false), setTaskId(null);
                   }}
                 >
                   <i className="fa-solid fa-xmark"></i>

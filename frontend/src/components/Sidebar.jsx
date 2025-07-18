@@ -132,8 +132,8 @@ const Sidebar = forwardRef(({
           </Link>
         </div>
 
-        <div className="flex font-semibold items-center gap-3 px-4 py-3 rounded-lg w-full transition-all hover:bg-white/10">
-          <button onClick={handleLogout} className="flex items-center md:hidden gap-3 rounded-lg w-full" >
+        <div className="flex font-semibold items-center gap-3 px-4 py-3 md:hidden rounded-lg w-full transition-all hover:bg-white/10">
+          <button onClick={handleLogout} className="flex items-center gap-3 rounded-lg w-full" >
             <FaSignOutAlt /> Log Out
           </button>
         </div>
