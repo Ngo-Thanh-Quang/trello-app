@@ -59,7 +59,13 @@ const BoardPage = () => {
       />
 
       <div className="md:ml-64 pt-20 transition-all duration-300">
-        <Outlet context={{ boards, invitedBoards, selectedBoardId, onSelectBoard: setSelectedBoardId }} />
+        <Outlet context={{
+          boards,
+          invitedBoards,
+          selectedBoardId, onSelectBoard: setSelectedBoardId,
+          handleEditBoard,
+          handleDeleteBoard,
+        }} />
       </div>
 
       {/* Modal Create Board */}
