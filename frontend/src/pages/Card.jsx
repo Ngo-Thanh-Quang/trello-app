@@ -217,6 +217,8 @@ const Card = () => {
                       m.picture || "https://ui-avatars.com/api/?name=" + m.name
                     }
                     alt={m.name || m.email}
+                    onClick={() => navigate(`/profile/${m.email}`)}
+                    title={`View ${m.name || m.email}'s profile`}
                   />
                 ))}
             </div>

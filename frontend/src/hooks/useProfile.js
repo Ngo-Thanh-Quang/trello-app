@@ -1,8 +1,13 @@
 import { useEffect, useState } from "react";
-import { getProfile, updateProfileName, updateProfileAvatar } from "../api/profileApi";
+import {
+  getProfile,
+  getProfileByEmail,
+  updateProfileName,
+  updateProfileAvatar,
+} from "../api/profileApi";
 import { toast } from "react-toastify";
 
-export const useProfile = () => {
+export const useProfile = (emailParam = null) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -12,20 +17,31 @@ export const useProfile = () => {
     if (!token) return;
 
     const fetchUser = async () => {
+      setLoading(true);
       try {
-        const data = await getProfile(token);
+        const data = emailParam
+          ? await getProfileByEmail(emailParam, token)
+          : await getProfile(token);
         setUser(data.user);
       } catch (err) {
         console.error("Error fetching profile", err);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchUser();
-  }, [token]);
+  }, [token, emailParam]);
 
   const updateProfile = async ({ name, avatar }) => {
     if (!token) {
       toast.error("You need to be logged in to update your profile");
+      return;
+    }
+
+    // Không cho phép update nếu đang xem profile của người khác
+    if (emailParam) {
+      toast.error("You can only update your own profile");
       return;
     }
 

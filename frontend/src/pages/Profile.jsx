@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useProfile } from "../hooks/useProfile";
+import { useParams } from "react-router-dom";
 
 const Profile = () => {
-  const { user, loading, updateProfile } = useProfile();
+  const { email } = useParams();
+  const { user, loading, updateProfile } = useProfile(email);
   const [edit, setEdit] = useState(false);
   const [updateName, setUpdateName] = useState("");
   const [avatar, setAvatar] = useState(null);
   const [input, setInput] = useState(false);
+  const isMyProfile = !email;
 
   useEffect(() => {
     if (user) setUpdateName(user.name);
@@ -74,12 +77,14 @@ const Profile = () => {
               <div>
                 <h1 className="text-2xl font-bold">{user.name}</h1>
                 <p className="text-gray-500 italic">{user.email}</p>
-                <button
-                  onClick={() => setEdit(true)}
-                  className="px-4 py-2 mt-5 bg-blue-600 text-white rounded-md font-bold cursor-pointer hover:bg-blue-700 transition"
-                >
-                  Edit Profile
-                </button>
+                {isMyProfile && (
+                  <button
+                    onClick={() => setEdit(true)}
+                    className="px-4 py-2 mt-5 bg-blue-600 text-white rounded-md font-bold cursor-pointer hover:bg-blue-700 transition"
+                  >
+                    Edit Profile
+                  </button>
+                )}
               </div>
             )}
           </div>
