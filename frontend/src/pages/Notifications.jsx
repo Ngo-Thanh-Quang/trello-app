@@ -19,15 +19,15 @@ const Notifications = () => {
                 <div>Board owner: {invite.board_owner_id}</div>
                 <div>Status: <span className="italic">{invite.status}</span></div>
               </div>
-              <div className="flex gap-2">
+              <div className="sm:flex block items-center text-right">
                 <button
-                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                  className="bg-green-500 text-white m-2 sm:px-2 px-4 py-2 rounded hover:bg-green-600"
                   onClick={() => handleAction(invite, "accepted")}
                 >
                   Accept
                 </button>
                 <button
-                  className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                  className="bg-red-500 text-white m-2 sm:px-2 px-4 py-2 rounded hover:bg-red-600"
                   onClick={() => handleAction(invite, "declined")}
                 >
                   Decline

@@ -12,7 +12,7 @@ exports.createTask = async (cardId, content) => {
   const newTask = {
     cardId,
     title: content,
-    assignee: "", 
+    assignee: [], 
     description: "",
     status: "To do",
     createdAt: new Date().toISOString(),

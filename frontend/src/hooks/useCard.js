@@ -14,7 +14,7 @@ export const useCard = (boardId, showInvite) => {
   const [alreadyInvited, setAlreadyInvited] = useState([]);
   const [cardTitle, setCardTitle] = useState("");
   const [create, setCreate] = useState("");
-  const [taskAssignee, setTaskAssignee] = useState("");
+  const [taskAssignee, setTaskAssignee] = useState([]);
   const [taskStatus, setTaskStatus] = useState("");
   const [taskTitle, setTaskTitle] = useState("");
   const [taskDescription, setTaskDescription] = useState("");

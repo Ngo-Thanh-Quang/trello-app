@@ -92,7 +92,7 @@ const Card = () => {
         showDetail(false);
         setEditTask(false);
         setShowDetailTask(false);
-        setTaskId(null)
+        setTaskId(null);
       }
     };
     document.addEventListener("mousedown", handleClose);
@@ -504,19 +504,22 @@ const Card = () => {
                   Assignee:
                 </label>
                 <select
-                  className="p-2"
-                  name="members"
+                  multiple
                   value={taskAssignee}
-                  onChange={(e) => setTaskAssignee(e.target.value)}
+                  onChange={(e) => {
+                    const selected = Array.from(
+                      e.target.selectedOptions,
+                      (option) => option.value
+                    );
+                    setTaskAssignee(selected);
+                  }}
+                  className="w-full p-2 border rounded"
                 >
-                  <option value="">Select assignee</option>
-                  {boardMembers[boardId] &&
-                    boardMembers[boardId].length > 0 &&
-                    boardMembers[boardId].map((m, idx) => (
-                      <option key={m.email} value={m.name}>
-                        {m.name}
-                      </option>
-                    ))}
+                  {boardMembers[boardId]?.map((member) => (
+                    <option key={member.name} value={member.name}>
+                      {member.name}
+                    </option>
+                  ))}
                 </select>
 
                 <br />
@@ -619,7 +622,7 @@ const Card = () => {
                   </div>
                   <div>
                     <p className="p-2 text-gray-600 font-semibold italic capitalize">
-                      {taskAssignee || "Unassigned"}
+                      {taskAssignee.join(', ') || "Unassigned"}
                     </p>
                     <p className="p-2 text-gray-600 font-semibold italic capitalize">
                       {taskTitle}
