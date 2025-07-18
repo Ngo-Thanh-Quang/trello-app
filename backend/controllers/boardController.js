@@ -103,17 +103,37 @@ exports.deleteBoard = async (req, res) => {
     if (!board || board.userEmail !== req.userEmail) {
       return res.status(404).json({ message: "Board not found or unauthorized" });
     }
+
     const cardsSnapshot = await db.collection('cards').where('boardId', '==', id).get();
+    const cardIds = cardsSnapshot.docs.map(doc => doc.id);
+
+    if (cardIds.length > 0) {
+      const BATCH_SIZE = 10;
+      for (let i = 0; i < cardIds.length; i += BATCH_SIZE) {
+        const batch = cardIds.slice(i, i + BATCH_SIZE);
+        const taskSnapshot = await db.collection('tasks')
+          .where('cardId', 'in', batch)
+          .get();
+
+        const deleteTaskPromises = taskSnapshot.docs.map(doc => doc.ref.delete());
+        await Promise.all(deleteTaskPromises);
+      }
+    }
+
+    // Xóa tất cả cards
     const deleteCardPromises = cardsSnapshot.docs.map(doc => doc.ref.delete());
     await Promise.all(deleteCardPromises);
+
     // Xóa board
     await boardsModel.deleteBoard(id);
+
     return res.status(204).send();
   } catch (error) {
     console.error("Error deleting board:", error);
     return res.status(500).json({ message: "Failed to delete board" });
   }
 };
+
 
 // Hien thi phan board da duoc moi va da chap nhan
 exports.getBoardsInvitedAccepted = async (req, res) => {
