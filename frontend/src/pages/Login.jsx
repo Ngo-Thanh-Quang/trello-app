@@ -1,125 +1,25 @@
-import React, { useState } from "react";
-import axios from "axios";
 import gg_img from "../assets/gg_img.webp";
-import { toast } from "react-toastify";
-import { useGoogleLogin } from "@react-oauth/google";
-import { useNavigate } from "react-router-dom";
+import useLogin from "../hooks/useLogin";
 
 const Login = ({ setIsLogged }) => {
-  const [state, setState] = useState("Login");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showOtp, setShowOtp] = useState(false);
-  const [otp, setOtp] = useState("");
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-  const backendUrl = import.meta.env.VITE_BACKEND_URL;
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-
-    if (state === "Login") {
-      try {
-        const res = await axios.post(`${backendUrl}/auth/signin`, {
-          email,
-          password,
-        });
-        if (res.status === 200) {
-          localStorage.setItem("tokenLogin", res.data.token);
-          setIsLogged(true);
-          navigate("/");
-        }
-      } catch (error) {
-        if (error.response) {
-          toast.error(error.response.data.message || "Invalid credentials");
-        } else {
-          toast.error("Server error!");
-        }
-        console.error("Login failed:", error);
-      } finally {
-        setLoading(false);
-      }
-    } else if (state === "Register") {
-      try {
-        const res = await axios.post(
-          `${backendUrl}/auth/request-verification`,
-          { email }
-        );
-
-        if (res.status === 200) {
-          setShowOtp(true);
-        }
-      } catch (error) {
-        console.error("OTP error:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-  };
-
-  const handleOtpSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      const res = await axios.post(`${backendUrl}/auth/signup`, {
-        email,
-        password,
-        name,
-        otp,
-      });
-      if (res.status === 201) {
-        localStorage.setItem("tokenLogin", res.data.token);
-        setIsLogged(true);
-        navigate("/");
-      }
-    } catch (error) {
-      if (error.response) {
-        toast.error(error.response.data.message || "Invalid OTP");
-      } else {
-        toast.error("Server error!");
-      }
-      console.error("Signup error:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleLogin = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      const { access_token } = tokenResponse;
-      setLoading(true)
-      try {
-        const profileRes = await axios.get(
-          "https://www.googleapis.com/oauth2/v3/userinfo",
-          {
-            headers: {
-              Authorization: `Bearer ${access_token}`,
-            },
-          }
-        );
-        const { email, name, picture } = profileRes.data;
-        const res = await axios.post(`${backendUrl}/auth/google-signin`, {
-          email,
-          name,
-          picture,
-        });
-        localStorage.setItem("tokenLogin", res.data.token);
-        toast.success("Login with Google successful!");
-        setIsLogged(true);
-        navigate("/");
-      } catch (error) {
-        toast.error("Google login failed!");
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    },
-    onError: () => toast.error("Google login error"),
-    flow: "implicit",
-  });
+  const {
+    state,
+    name,
+    setName,
+    email,
+    setEmail,
+    password,
+    setPassword,
+    otp,
+    setOtp,
+    loading,
+    showOtp,
+    setShowOtp,
+    handleSubmit,
+    handleOtpSubmit,
+    handleGoogleLogin,
+    changeMode,
+  } = useLogin(setIsLogged);
 
   return (
     <div>
@@ -184,14 +84,14 @@ const Login = ({ setIsLogged }) => {
         <div className="mb-6">
           {state === "Login" ? (
             <p
-              onClick={() => setState("Register")}
+              onClick={changeMode}
               className="text-gray-500 text-right italic text-sm font-semibold cursor-pointer"
             >
               Don't have an account?
             </p>
           ) : (
             <p
-              onClick={() => setState("Login")}
+              onClick={changeMode}
               className="text-gray-500 text-right italic text-sm font-semibold cursor-pointer"
             >
               Already have an account?

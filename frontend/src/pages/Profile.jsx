@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useProfile } from "../hooks/useProfile";
 
 const Profile = () => {
@@ -8,7 +8,7 @@ const Profile = () => {
   const [avatar, setAvatar] = useState(null);
   const [input, setInput] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (user) setUpdateName(user.name);
   }, [user]);
 
