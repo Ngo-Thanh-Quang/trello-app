@@ -24,3 +24,7 @@ export const editBoard = async (id, data, token) => {
 export const deleteBoard = async (id, token) => {
   return await axios.delete(`${backendUrl}/boards/${id}`, getAuthHeader(token));
 };
+
+export const fetchBoardMembers = async (boardId) => {
+  return await axios.get(`${backendUrl}/boards/${boardId}/accepted-members`);
+}
