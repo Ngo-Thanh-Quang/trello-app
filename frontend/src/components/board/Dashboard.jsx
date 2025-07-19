@@ -1,6 +1,6 @@
 import React from "react";
 import { useOutletContext } from "react-router";
-import Card from "../pages/Card";
+import Card from "../../pages/Card";
 import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {

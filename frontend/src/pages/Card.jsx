@@ -1,17 +1,12 @@
-import axios from "axios";
-import React, { use, useEffect, useState } from "react";
-import {
-  FaLongArrowAltLeft,
-  FaPlus,
-  FaEllipsisV,
-  FaTrashAlt,
-  FaEdit,
-  FaInfoCircle,
-} from "react-icons/fa";
+import React, { useEffect, useState } from "react";
+import { FaLongArrowAltLeft, FaPlus } from "react-icons/fa";
 import { useParams, useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { useCard } from "../hooks/useCard";
+import TaskModal from "../components/card/TaskModal";
+import CardModal from "../components/card/CardModal";
+import CardHeader from "../components/card/CardHeader";
+import CardItem from "../components/card/CardItem";
 
 const Card = () => {
   const { boardId } = useParams();
@@ -32,7 +27,6 @@ const Card = () => {
     boardMembers,
     board,
     cards,
-    setCards,
     owner,
     cardTitle,
     setCardTitle,
@@ -48,7 +42,6 @@ const Card = () => {
     setTaskDescription,
     taskTitle,
     setTaskTitle,
-    setAlreadyInvited,
     detailCard,
     addCard,
     updateCard,
@@ -60,27 +53,6 @@ const Card = () => {
     updateTask,
     sendInvites,
   } = useCard(boardId, showInvite);
-
-  const handleAddCard = async () => {
-    if (!cardTitle.trim()) return;
-    await addCard(boardId, cardTitle);
-    setCardTitle("");
-    setForm(false);
-  };
-  const handleUpdateCard = async () => {
-    if (!cardTitle.trim()) return;
-    await updateCard(selectCard, cardTitle);
-    setCardTitle("");
-    setEdit(false);
-    setSelectCard(null);
-  };
-
-  const handleAddTask = async () => {
-    if (!taskTitle.trim()) return;
-    await addTask(createTask, taskTitle);
-    setTaskTitle("");
-    openCreateTask(null);
-  };
 
   useEffect(() => {
     const handleClose = (e) => {
@@ -114,261 +86,59 @@ const Card = () => {
         </div>
       ) : (
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <div>
-              <h3 className="font-bold py-2 text-lg md:text-2xl text-blue-700 capitalize">
-                {board.name}
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                <div className="text-gray-600 italic">{board.description}</div>
-              </div>
-              {showInvite && (
-                <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-20">
-                  <div className="bg-white p-6 rounded-lg shadow-lg w-75 sm:w-96 relative">
-                    <div
-                      className="absolute flex right-3 top-2 cursor-pointer"
-                      onClick={() => setShowInvite(false)}
-                    >
-                      <i className="fa-solid fa-xmark"></i>
-                    </div>
-                    <h2 className="text-xl font-bold mb-4 text-center">
-                      Invite Members
-                    </h2>
-                    <div className="mb-4">
-                      <div className="font-semibold mb-2">
-                        Select emails to invite:
-                      </div>
-                      <div className="max-h-40 overflow-y-auto border rounded p-2">
-                        {allUsers.length === 0 ||
-                        allUsers.filter(
-                          (email) =>
-                            email !== board.userEmail &&
-                            !alreadyInvited.includes(email)
-                        ).length === 0 ? (
-                          <div>No users available to invite.</div>
-                        ) : (
-                          allUsers
-                            .filter(
-                              (email) =>
-                                email !== board.userEmail &&
-                                !alreadyInvited.includes(email)
-                            )
-                            .map((email) => (
-                              <label
-                                key={email}
-                                className="flex items-center gap-2 mb-1"
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={inviteEmails.includes(email)}
-                                  onChange={(e) => {
-                                    if (e.target.checked) {
-                                      setInviteEmails([...inviteEmails, email]);
-                                    } else {
-                                      setInviteEmails(
-                                        inviteEmails.filter(
-                                          (em) => em !== email
-                                        )
-                                      );
-                                    }
-                                  }}
-                                />
-                                <span>{email}</span>
-                              </label>
-                            ))
-                        )}
-                      </div>
-                    </div>
-                    <button
-                      onClick={async () => {
-                        if (inviteEmails.length === 0) return;
-                        try {
-                          await sendInvites(inviteEmails);
-                          setShowInvite(false);
-                          setInviteEmails([]);
-                          alert("Đã gửi lời mời thành công!");
-                        } catch (err) {
-                          alert("Gửi lời mời thất bại!");
-                        }
-                      }}
-                      className="bg-blue-500 text-white font-semibold cursor-pointer w-full py-2 rounded hover:bg-blue-600"
-                    >
-                      Send Invite
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-            <div className="flex -space-x-2 items-center">
-              <button
-                className="w-10 md:w-16 flex-shrink-0 gap-2 bg-gray-100 hover:bg-gray-200 rounded-lg shadow p-2 flex items-center justify-center cursor-pointer"
-                onClick={() => setShowInvite(true)}
-              >
-                <FaPlus />
-              </button>
-
-              {boardMembers[boardId] &&
-                boardMembers[boardId].length > 0 &&
-                boardMembers[boardId].map((m, idx) => (
-                  <img
-                    key={m.email || idx}
-                    className="inline-block size-8 md:size-10 rounded-full ring-2 ring-white cursor-pointer"
-                    src={
-                      m.picture || "https://ui-avatars.com/api/?name=" + m.name
-                    }
-                    alt={m.name || m.email}
-                    onClick={() => navigate(`/profile/${m.email}`)}
-                    title={`View ${m.name || m.email}'s profile`}
-                  />
-                ))}
-            </div>
-          </div>
+          <CardHeader
+            board={board}
+            boardId={boardId}
+            showInvite={showInvite}
+            setShowInvite={setShowInvite}
+            allUsers={allUsers}
+            alreadyInvited={alreadyInvited}
+            inviteEmails={inviteEmails}
+            setInviteEmails={setInviteEmails}
+            sendInvites={sendInvites}
+            boardMembers={boardMembers}
+          />
           {cards.length > 0 ? (
             <DragDropContext onDragEnd={onDragEnd}>
               <div className="flex gap-4 overflow-x-auto pb-4 items-start">
                 {cards.map((card) => (
-                  <div
+                  <CardItem
                     key={card.id}
-                    className="w-64 flex-shrink-0 bg-gray-100 rounded-lg shadow p-3 relative border border-gray-100 hover:border-gray-200 cursor-pointer"
-                  >
-                    {currentUser === owner && (
-                      <div className="absolute right-3 top-3 cursor-pointer text-gray-500 close">
-                        <FaEllipsisV onClick={() => setSelectCard(card.id)} />
-
-                        {selectCard === card.id && (
-                          <div className="absolute top-full right-0 mt-2 bg-white rounded shadow-md z-10 min-w-[120px]">
-                            <button
-                              className="flex gap-2 items-center w-full cursor-pointer text-left px-4 py-2 hover:bg-gray-100"
-                              onClick={() => {
-                                setCardTitle(card.title);
-                                setEdit(true);
-                              }}
-                            >
-                              <FaEdit /> Edit
-                            </button>
-                            <button
-                              className="flex gap-2 items-center w-full cursor-pointer text-left px-4 py-2 hover:bg-gray-100"
-                              onClick={() => {
-                                deleteCard(card.id);
-                                setSelectCard(null);
-                              }}
-                            >
-                              <FaTrashAlt /> Delete
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    <h4
-                      onClick={() => detailCard(card, showDetail)}
-                      className="font-bold mb-3 capitalize"
-                    >
-                      {card.title}
-                    </h4>
-                    <Droppable droppableId={card.id}>
-                      {(provided) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.droppableProps}
-                          className="space-y-2 min-h-[5px]"
-                        >
-                          {card.tasks.map((task, index) => (
-                            <Draggable
-                              key={task.id}
-                              draggableId={task.id}
-                              index={index}
-                            >
-                              {(provided) => (
-                                <div
-                                  onClick={() => setTaskId(task.id)}
-                                  className="bg-white p-2 relative rounded shadow hover:shadow-md cursor-pointer"
-                                  ref={provided.innerRef}
-                                  {...provided.draggableProps}
-                                  {...provided.dragHandleProps}
-                                >
-                                  <span>{task.title}</span>
-                                  {taskId === task.id && (
-                                    <div className="absolute left-full top-0 ml-2 z-10 bg-white text-gray-500 rounded shadow-md w-32 close">
-                                      <button
-                                        className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center cursor-pointer gap-2"
-                                        onClick={() => {
-                                          detailTask(task, setShowDetailTask);
-                                          setTaskId(null);
-                                        }}
-                                      >
-                                        <FaInfoCircle /> Detail
-                                      </button>
-                                      {currentUser === owner && (
-                                        <div>
-                                          <button
-                                            className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center cursor-pointer gap-2"
-                                            onClick={() => {
-                                              setEditTask(true);
-                                              console.log("Task object:", task);
-                                              console.log(
-                                                "Task assignee:",
-                                                task.assignee
-                                              );
-                                              setTaskTitle(task.title);
-                                              setTaskAssignee(task.assignee);
-                                              setTaskId(null);
-                                            }}
-                                          >
-                                            <FaEdit /> Edit
-                                          </button>
-                                          <button
-                                            className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center cursor-pointer gap-2"
-                                            onClick={() => {
-                                              deleteTask(task.id, card.id);
-                                              setTaskId(null);
-                                            }}
-                                          >
-                                            <FaTrashAlt /> Delete
-                                          </button>
-                                        </div>
-                                      )}
-                                    </div>
-                                  )}
-                                </div>
-                              )}
-                            </Draggable>
-                          ))}
-                          {provided.placeholder}
-                        </div>
-                      )}
-                    </Droppable>
-                    {createTask === card.id ? (
-                      <div className="mt-2 close">
-                        <input
-                          className="input p-2 mb-2 bg-white w-full"
-                          placeholder="Task title"
-                          value={taskTitle}
-                          onChange={(e) => setTaskTitle(e.target.value)}
-                        />
-                        <button
-                          className="w-[40%] cursor-pointer font-medium rounded-lg p-2 text-center flex items-center gap-2 text-white bg-blue-600 transition hover:bg-blue-500"
-                          onClick={() => handleAddTask(card.id, taskTitle)}
-                        >
-                          Add Task
-                        </button>
-                      </div>
-                    ) : (
-                      currentUser === owner && (
-                        <button
-                          onClick={() => openCreateTask(card.id)}
-                          className="mt-2 w-full cursor-pointer rounded-lg p-2 text-left flex items-center gap-2 hover:bg-gray-300"
-                        >
-                          <FaPlus className="text-sm" /> Add a task
-                        </button>
-                      )
-                    )}
-                  </div>
+                    card={card}
+                    currentUser={currentUser}
+                    owner={owner}
+                    selectCard={selectCard}
+                    setSelectCard={setSelectCard}
+                    setCardTitle={setCardTitle}
+                    setEdit={setEdit}
+                    deleteCard={deleteCard}
+                    detailCard={detailCard}
+                    taskId={taskId}
+                    setTaskId={setTaskId}
+                    taskTitle={taskTitle}
+                    setTaskTitle={setTaskTitle}
+                    taskDescription={taskDescription}
+                    setTaskDescription={setTaskDescription}
+                    taskAssignee={taskAssignee}
+                    setTaskAssignee={setTaskAssignee}
+                    deleteTask={deleteTask}
+                    detailTask={detailTask}
+                    editTask={editTask}
+                    setEditTask={setEditTask}
+                    createTask={createTask}
+                    openCreateTask={openCreateTask}
+                    addTask={addTask}
+                    showDetail={showDetail}
+                    setShowDetailTask={setShowDetailTask}
+                  />
                 ))}
 
                 {currentUser === owner && (
                   <button
-                    onClick={() => setForm(true)}
+                    onClick={() => {
+                      setForm(true);
+                      setCardTitle("");
+                    }}
                     className="w-64 flex-shrink-0 gap-2 bg-gray-100 hover:bg-gray-200 rounded-lg shadow p-2 flex items-center justify-center cursor-pointer"
                   >
                     <FaPlus className="text-sm" /> Add another card
@@ -383,7 +153,10 @@ const Card = () => {
               </div>
               {currentUser === owner && (
                 <button
-                  onClick={() => setForm(true)}
+                  onClick={() => {
+                    setForm(true);
+                    setCardTitle("");
+                  }}
                   className="w-64 flex-shrink-0 gap-2 bg-gray-100 hover:bg-gray-200 rounded-lg shadow p-2 flex items-center justify-center cursor-pointer"
                 >
                   <FaPlus className="text-sm" /> Add another card
@@ -393,250 +166,67 @@ const Card = () => {
           )}
           {/* Creating a new card */}
           {form && (
-            <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-10">
-              <div className="bg-white p-6 rounded-lg shadow-lg w-75 sm:w-96 relative close">
-                <div
-                  className="absolute flex right-3 top-2 cursor-pointer"
-                  onClick={() => setForm(false)}
-                >
-                  <i className="fa-solid fa-xmark"></i>
-                </div>
-                <h2 className="text-xl font-bold mb-4 text-center">
-                  Create New Card
-                </h2>
-                <input
-                  type="text"
-                  value={cardTitle}
-                  onChange={(e) => setCardTitle(e.target.value)}
-                  placeholder="Enter card title"
-                  className="input mb-4 w-full focus:outline-none"
-                />
-                <button
-                  onClick={handleAddCard}
-                  className="bg-blue-500 text-white font-semibold cursor-pointer w-full py-2 rounded hover:bg-blue-600"
-                >
-                  Confirm
-                </button>
-              </div>
-            </div>
+            <CardModal
+              mode="create"
+              cardTitle={cardTitle}
+              setCardTitle={setCardTitle}
+              addCard={addCard}
+              setForm={setForm}
+            />
           )}
           {/* Edit card */}
           {edit && (
-            <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-10">
-              <div className="bg-white p-6 rounded-lg shadow-lg w-75 sm:w-96 relative close">
-                <div
-                  className="absolute flex right-3 top-2 cursor-pointer"
-                  onClick={() => {
-                    setEdit(false), setSelectCard(null);
-                  }}
-                >
-                  <i className="fa-solid fa-xmark"></i>
-                </div>
-                <h2 className="text-xl font-bold mb-4 text-center">
-                  Edit Card
-                </h2>
-                <input
-                  type="text"
-                  value={cardTitle}
-                  onChange={(e) => setCardTitle(e.target.value)}
-                  placeholder="Enter card title"
-                  className="input mb-4 w-full focus:outline-none"
-                />
-                <button
-                  onClick={handleUpdateCard}
-                  className="bg-blue-500 text-white font-semibold cursor-pointer w-full py-2 rounded hover:bg-blue-600"
-                >
-                  Confirm
-                </button>
-              </div>
-            </div>
+            <CardModal
+              mode="edit"
+              cardTitle={cardTitle}
+              setCardTitle={setCardTitle}
+              setEdit={setEdit}
+              selectCard={selectCard}
+              setSelectCard={setSelectCard}
+              updateCard={updateCard}
+            />
           )}
           {/* Card detail*/}
           {detail && (
-            <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-10">
-              <div className="bg-white p-6 rounded-lg shadow-lg w-75 sm:w-96 relative close">
-                <div
-                  className="absolute flex right-3 top-2 cursor-pointer"
-                  onClick={() => showDetail(false)}
-                >
-                  <i className="fa-solid fa-xmark"></i>
-                </div>
-                <h2 className="text-xl font-bold mb-4 text-center">
-                  Card Information
-                </h2>
-                <div className="flex gap-2">
-                  <div>
-                    <p className="p-2 font-semibold">Name:</p>
-                    <p className="p-2 font-semibold">Created at:</p>
-                  </div>
-                  <div>
-                    <p className="p-2 text-gray-600 font-semibold italic capitalize">
-                      {cardTitle}
-                    </p>
-                    <p className="p-2 text-gray-600 font-semibold italic">
-                      {create}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <CardModal
+              mode="detail"
+              cardTitle={cardTitle}
+              create={create}
+              showDetail={showDetail}
+            />
           )}
           {/* Edit task */}
           {editTask && (
-            <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-10">
-              <div className="bg-white p-6 rounded-lg shadow-lg w-75 sm:w-96 relative close">
-                <div
-                  className="absolute flex right-3 top-2 cursor-pointer"
-                  onClick={() => {
-                    setEditTask(false);
-                    setTaskId(null);
-                    setTaskTitle("");
-                    setTaskDescription("");
-                    setTaskAssignee("");
-                  }}
-                >
-                  <i className="fa-solid fa-xmark"></i>
-                </div>
-                <h2 className="text-xl font-bold mb-4 text-center">
-                  Edit Task
-                </h2>
-                <label for="members" className="p-2 pr-5 font-semibold">
-                  Assignee:
-                </label>
-                <select
-                  multiple
-                  value={taskAssignee}
-                  onChange={(e) => {
-                    const selected = Array.from(
-                      e.target.selectedOptions,
-                      (option) => option.value
-                    );
-                    setTaskAssignee(selected);
-                  }}
-                  className="w-full p-2 border rounded"
-                >
-                  {boardMembers[boardId]?.map((member) => (
-                    <option key={member.name} value={member.name}>
-                      {member.name}
-                    </option>
-                  ))}
-                </select>
-
-                <br />
-                <label className="p-2 pr-5 font-semibold block">Status:</label>
-                <div className="flex gap-4 mb-4 px-2">
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="status"
-                      value="To do"
-                      checked={taskStatus === "To do"}
-                      onChange={(e) => setTaskStatus(e.target.value)}
-                    />
-                    To do
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="status"
-                      value="In progress"
-                      checked={taskStatus === "In progress"}
-                      onChange={(e) => setTaskStatus(e.target.value)}
-                    />
-                    In progress
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="status"
-                      value="Done"
-                      checked={taskStatus === "Done"}
-                      onChange={(e) => setTaskStatus(e.target.value)}
-                    />
-                    Done
-                  </label>
-                </div>
-                <input
-                  type="text"
-                  value={taskTitle}
-                  onChange={(e) => setTaskTitle(e.target.value)}
-                  placeholder="Enter title"
-                  className="input p-2 w-full border-b border-gray-300 focus:outline-none"
-                />
-                <input
-                  type="text"
-                  value={taskDescription}
-                  onChange={(e) => setTaskDescription(e.target.value)}
-                  placeholder="Enter description"
-                  className="input p-2 mb-4 w-full border-b border-gray-300 focus:outline-none"
-                />
-                <button
-                  onClick={() => {
-                    const taskData = {
-                      title: taskTitle,
-                      description: taskDescription,
-                      status: taskStatus,
-                      assignee: taskAssignee,
-                    };
-                    const card = cards.find((c) =>
-                      c.tasks.some((t) => t.id === taskId)
-                    );
-                    if (card) {
-                      console.log("Sending taskData", taskData);
-                      updateTask(taskId, card.id, taskData);
-                      setEditTask(false);
-                      setTaskId(null);
-                      setTaskTitle("");
-                      setTaskDescription("");
-                      setTaskAssignee("");
-                    }
-                  }}
-                  className="bg-blue-500 text-white font-semibold cursor-pointer w-full py-2 rounded hover:bg-blue-600"
-                >
-                  Confirm
-                </button>
-              </div>
-            </div>
+            <TaskModal
+              mode="edit"
+              boardId={boardId}
+              boardMembers={boardMembers}
+              taskTitle={taskTitle}
+              setTaskTitle={setTaskTitle}
+              taskDescription={taskDescription}
+              setTaskDescription={setTaskDescription}
+              taskAssignee={taskAssignee}
+              setTaskAssignee={setTaskAssignee}
+              taskStatus={taskStatus}
+              setTaskStatus={setTaskStatus}
+              setEditTask={setEditTask}
+              setTaskId={setTaskId}
+              cards={cards}
+              taskId={taskId}
+              updateTask={updateTask}
+            />
           )}
           {/* Task detail */}
           {showDetailTask && (
-            <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-10">
-              <div className="bg-white p-6 rounded-lg shadow-lg w-75 sm:w-96 relative close">
-                <div
-                  className="absolute flex right-3 top-2 cursor-pointer"
-                  onClick={() => {
-                    setShowDetailTask(false), setTaskId(null);
-                  }}
-                >
-                  <i className="fa-solid fa-xmark"></i>
-                </div>
-                <h2 className="text-xl font-bold mb-4 text-center">
-                  Task Information
-                </h2>
-                <div className="flex gap-2">
-                  <div>
-                    <p className="p-2 font-semibold">Assignee:</p>
-                    <p className="p-2 font-semibold">Title:</p>
-                    <p className="p-2 font-semibold">Description:</p>
-                    <p className="p-2 font-semibold">Status:</p>
-                  </div>
-                  <div>
-                    <p className="p-2 text-gray-600 font-semibold italic capitalize">
-                      {taskAssignee.join(', ') || "Unassigned"}
-                    </p>
-                    <p className="p-2 text-gray-600 font-semibold italic capitalize">
-                      {taskTitle}
-                    </p>
-                    <p className="p-2 text-gray-600 font-semibold italic">
-                      {taskDescription || "No description"}
-                    </p>
-                    <p className="p-2 text-gray-600 font-semibold italic">
-                      {taskStatus}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <TaskModal
+              mode="detail"
+              taskTitle={taskTitle}
+              taskDescription={taskDescription}
+              taskStatus={taskStatus}
+              taskAssignee={taskAssignee}
+              setShowDetailTask={setShowDetailTask}
+              setTaskId={setTaskId}
+            />
           )}
         </div>
       )}

@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import { Outlet } from "react-router";
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../components/bar/Sidebar";
 import useBoards from "../hooks/useBoard";
 import { FaBars, FaTimes } from "react-icons/fa";
 

@@ -5,7 +5,7 @@ import Home from "./pages/Home";
 import Profile from "./pages/Profile";
 import Card from "./pages/Card";
 import Login from "./pages/Login";
-import Dashboard from "./components/Dashboard";
+import Dashboard from "./components/board/Dashboard";
 import Notifications from "./pages/Notifications";
 
 
