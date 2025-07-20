@@ -25,11 +25,6 @@ export const useCard = (boardId, showInvite) => {
     const fetchAllData = async () => {
       setLoading(true);
       try {
-        if (showInvite) {
-          const invited = await api.fetchInvitedEmails(boardId);
-          setAlreadyInvited(invited);
-        }
-
         const members = await api.fetchAcceptedMembers(boardId);
         setBoardMembers({ [boardId]: members });
 
@@ -59,7 +54,21 @@ export const useCard = (boardId, showInvite) => {
     });
 
     return () => unsubscribe();
-  }, [boardId, showInvite]);
+  }, [boardId]);
+
+  useEffect(() => {
+  const fetchInvites = async () => {
+    if (!boardId || !showInvite) return;
+    try {
+      const invited = await api.fetchInvitedEmails(boardId);
+      setAlreadyInvited(invited);
+    } catch (err) {
+      console.error("Error fetching invited users:", err);
+    }
+  };
+
+  fetchInvites();
+}, [boardId, showInvite]);
 
   const addCard = async (boardId, title) => {
     if (!title) return;
@@ -126,6 +135,10 @@ export const useCard = (boardId, showInvite) => {
       setCards(updatedCard);
 
       await api.updateTaskById(draggableId, {
+        title: movedTask.title,
+        description: movedTask.description,
+        status: movedTask.status,
+        assignee: movedTask.assignee,
         order: destination.index,
       });
     } else {
