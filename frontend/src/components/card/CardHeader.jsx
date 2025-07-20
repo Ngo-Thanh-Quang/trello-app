@@ -1,6 +1,6 @@
 import React from "react";
 import { FaPlus } from "react-icons/fa";
-import InviteModal from "./InviteModal";
+import InviteModal from "../invite/InviteModal";
 import { useNavigate } from "react-router-dom";
 
 const CardHeader = ({

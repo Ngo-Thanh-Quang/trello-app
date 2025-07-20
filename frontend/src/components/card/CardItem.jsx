@@ -1,14 +1,8 @@
-// components/CardItem.jsx
 import React from "react";
-import {
-  FaPlus,
-  FaEllipsisV,
-  FaEdit,
-  FaTrashAlt,
-  FaInfoCircle,
-} from "react-icons/fa";
-import { Droppable, Draggable } from "@hello-pangea/dnd";
-import TaskModal from "./TaskModal";
+import { FaPlus, FaEllipsisV, FaEdit, FaTrashAlt } from "react-icons/fa";
+import { Droppable } from "@hello-pangea/dnd";
+import TaskModal from "../task/TaskModal";
+import TaskItem from "../task/TaskItem";
 
 const CardItem = ({
   card,
@@ -24,13 +18,10 @@ const CardItem = ({
   setTaskId,
   taskTitle,
   setTaskTitle,
-  taskDescription,
   setTaskDescription,
-  taskAssignee,
   setTaskAssignee,
   deleteTask,
   detailTask,
-  editTask,
   setEditTask,
   createTask,
   openCreateTask,
@@ -86,57 +77,22 @@ const CardItem = ({
             className="space-y-2 min-h-[5px]"
           >
             {card.tasks.map((task, index) => (
-              <Draggable key={task.id} draggableId={task.id} index={index}>
-                {(provided) => (
-                  <div
-                    onClick={() => setTaskId(task.id)}
-                    className="bg-white p-2 relative rounded shadow hover:shadow-md cursor-pointer"
-                    ref={provided.innerRef}
-                    {...provided.draggableProps}
-                    {...provided.dragHandleProps}
-                  >
-                    <span>{task.title}</span>
-                    {taskId === task.id && (
-                      <div className="absolute left-full top-0 ml-2 z-10 bg-white text-gray-500 rounded shadow-md w-32 close">
-                        <button
-                          className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center cursor-pointer gap-2"
-                          onClick={() => {
-                            detailTask(task, setShowDetailTask);
-                            setTaskId(null);
-                          }}
-                        >
-                          <FaInfoCircle /> Detail
-                        </button>
-                        {currentUser === owner && (
-                          <div>
-                            <button
-                              className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center cursor-pointer gap-2"
-                              onClick={() => {
-                                setEditTask(true);
-                                setTaskTitle(task.title);
-                                setTaskDescription(task.description);
-                                setTaskAssignee(task.assignee);
-                                setTaskId(null);
-                              }}
-                            >
-                              <FaEdit /> Edit
-                            </button>
-                            <button
-                              className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center cursor-pointer gap-2"
-                              onClick={() => {
-                                deleteTask(task.id, card.id);
-                                setTaskId(null);
-                              }}
-                            >
-                              <FaTrashAlt /> Delete
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </Draggable>
+              <TaskItem
+                key={task.id}
+                task={task}
+                index={index}
+                currentUser={currentUser}
+                owner={owner}
+                taskId={taskId}
+                setTaskId={setTaskId}
+                detailTask={detailTask}
+                setShowDetailTask={setShowDetailTask}
+                setEditTask={setEditTask}
+                setTaskTitle={setTaskTitle}
+                setTaskDescription={setTaskDescription}
+                setTaskAssignee={setTaskAssignee}
+                deleteTask={deleteTask}
+              />
             ))}
             {provided.placeholder}
           </div>

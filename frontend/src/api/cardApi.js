@@ -1,8 +1,61 @@
 import axios from "axios";
+import { db } from "../../firebase";
+import { getDocs, query, collection, where, onSnapshot } from "firebase/firestore";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
 const getToken = () => localStorage.getItem("tokenLogin");
+
+export const listenToCardsWithTasks = (boardId, onUpdate) => {
+  const cardQuery = query(collection(db, "cards"), where("boardId", "==", boardId));
+  const taskQuery = query(collection(db, "tasks")); 
+
+  const unsubCards = onSnapshot(cardQuery, async (cardSnap) => {
+    const cards = cardSnap.docs.map((doc) => ({ id: doc.id, ...doc.data(), tasks: [] }));
+
+    const cardsMap = {};
+    for (const card of cards) {
+      cardsMap[card.id] = card;
+    }
+
+    const taskSnap = await getDocs(query(collection(db, "tasks")));
+    taskSnap.forEach((doc) => {
+      const task = { id: doc.id, ...doc.data() };
+      if (cardsMap[task.cardId]) {
+        cardsMap[task.cardId].tasks.push(task);
+      }
+    });
+
+    const updatedCards = Object.values(cardsMap);
+    onUpdate(updatedCards);
+  });
+
+  const unsubTasks = onSnapshot(taskQuery, async () => {
+    const cardSnap = await getDocs(cardQuery);
+    const cards = cardSnap.docs.map((doc) => ({ id: doc.id, ...doc.data(), tasks: [] }));
+
+    const cardsMap = {};
+    for (const card of cards) {
+      cardsMap[card.id] = card;
+    }
+
+    const taskSnap = await getDocs(query(collection(db, "tasks")));
+    taskSnap.forEach((doc) => {
+      const task = { id: doc.id, ...doc.data() };
+      if (cardsMap[task.cardId]) {
+        cardsMap[task.cardId].tasks.push(task);
+      }
+    });
+
+    const updatedCards = Object.values(cardsMap);
+    onUpdate(updatedCards);
+  });
+
+  return () => {
+    unsubCards();
+    unsubTasks();
+  };
+};
 
 export const fetchInvitedEmails = async (boardId) => {
   const token = getToken();

@@ -3,7 +3,7 @@ import { FaLongArrowAltLeft, FaPlus } from "react-icons/fa";
 import { useParams, useNavigate } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { useCard } from "../hooks/useCard";
-import TaskModal from "../components/card/TaskModal";
+import TaskModal from "../components/task/TaskModal";
 import CardModal from "../components/card/CardModal";
 import CardHeader from "../components/card/CardHeader";
 import CardItem from "../components/card/CardItem";
@@ -74,7 +74,7 @@ const Card = () => {
   return (
     <div className="absolute top-20 left-0 md:left-64 right-0 bottom-0 bg-white p-6 overflow-auto">
       <button
-        className="px-5 py-2 flex gap-2 cursor-pointer items-center text-base bg-blue-400 hover:bg-blue-600 text-white rounded-lg font-semibold mb-4"
+        className="px-5 py-2 flex gap-2 cursor-pointer items-center text-base bg-blue-700 hover:bg-blue-500 duration-300 text-white rounded-lg font-semibold mb-4"
         onClick={() => navigate("/")}
       >
         <FaLongArrowAltLeft />{" "}

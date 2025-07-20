@@ -20,6 +20,8 @@ export const useCard = (boardId, showInvite) => {
   const [taskDescription, setTaskDescription] = useState("");
 
   useEffect(() => {
+    if (!boardId) return;
+
     const fetchAllData = async () => {
       setLoading(true);
       try {
@@ -51,6 +53,12 @@ export const useCard = (boardId, showInvite) => {
     };
 
     fetchAllData();
+
+    const unsubscribe = api.listenToCardsWithTasks(boardId, (liveCards) => {
+    setCards(liveCards); 
+  });
+
+  return () => unsubscribe();
   }, [boardId, showInvite]);
 
   const addCard = async (boardId, title) => {

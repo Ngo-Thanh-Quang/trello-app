@@ -1,4 +1,3 @@
-// components/InviteModal.jsx
 import React from "react";
 
 const InviteModal = ({
