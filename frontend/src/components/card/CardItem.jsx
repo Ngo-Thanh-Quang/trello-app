@@ -80,6 +80,7 @@ const CardItem = ({
               <TaskItem
                 key={task.id}
                 task={task}
+                card={card}
                 index={index}
                 currentUser={currentUser}
                 owner={owner}

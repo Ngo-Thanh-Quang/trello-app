@@ -52,12 +52,12 @@ exports.updateTask = async (req, res) => {
 
 exports.updateTaskMove = async (req, res) => {
   const { taskId } = req.params;
-  const { cardId } = req.body;
+  const { cardId, order } = req.body;
 
-  if (!cardId) return res.status(400).json({ message: "cardId is required" });
+  if (!cardId || order === undefined) return res.status(400).json({ message: "cardId and order are required" });
 
   try {
-    await taskModel.updateTaskMove(taskId, cardId);
+    await taskModel.updateTaskMove(taskId, cardId, order);
     return res.status(200).json({ message: "Card ID updated successfully" });
   } catch (err) {
     return res.status(500).json({ message: "Failed to update card ID" });

@@ -6,7 +6,7 @@ export const useCard = (boardId, showInvite) => {
   const [boardMembers, setBoardMembers] = useState({});
   const [board, setBoard] = useState({});
   const [cards, setCards] = useState([]);
-  const [newTask, setNewTask] = useState([])
+  const [newTask, setNewTask] = useState([]);
   const [owner, setOwner] = useState("");
   const [loading, setLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState("");
@@ -55,10 +55,10 @@ export const useCard = (boardId, showInvite) => {
     fetchAllData();
 
     const unsubscribe = api.listenToCardsWithTasks(boardId, (liveCards) => {
-    setCards(liveCards); 
-  });
+      setCards(liveCards);
+    });
 
-  return () => unsubscribe();
+    return () => unsubscribe();
   }, [boardId, showInvite]);
 
   const addCard = async (boardId, title) => {
@@ -114,22 +114,49 @@ export const useCard = (boardId, showInvite) => {
 
     if (source.droppableId === destination.droppableId) {
       sourceTasks.splice(destination.index, 0, movedTask);
+
+      const updatedTasks = sourceTasks.map((task, index) => ({
+        ...task,
+        order: index,
+      }));
+
       const updatedCard = cards.map((card) =>
         card.id === sourceCard.id ? { ...card, tasks: sourceTasks } : card
       );
       setCards(updatedCard);
+
+      await api.updateTaskById(draggableId, {
+        order: destination.index,
+      });
     } else {
       const destTasks = [...destCard.tasks];
       destTasks.splice(destination.index, 0, movedTask);
+
+      const updatedSourceTasks = sourceTasks.map((task, index) => ({
+        ...task,
+        order: index,
+      }));
+
+      const updatedDestTasks = destTasks.map((task, index) => ({
+        ...task,
+        order: index,
+      }));
+
       const updatedCard = cards.map((card) => {
-        if (card.id === sourceCard.id) return { ...card, tasks: sourceTasks };
-        if (card.id === destCard.id) return { ...card, tasks: destTasks };
+        if (card.id === sourceCard.id)
+          return { ...card, tasks: updatedSourceTasks };
+        if (card.id === destCard.id)
+          return { ...card, tasks: updatedDestTasks };
         return card;
       });
       setCards(updatedCard);
 
       try {
-        await api.moveTaskToCard(draggableId, destination.droppableId);
+        await api.moveTaskToCard(
+          draggableId,
+          destination.droppableId,
+          destination.index
+        );
       } catch (err) {
         console.error("Failed to move task:", err);
       }
@@ -194,10 +221,12 @@ export const useCard = (boardId, showInvite) => {
     toast.success("Task updated");
   };
 
-  const sendInvites = useCallback(async (emails) => {
-    await api.sendInvites(boardId, emails);
-  }, [boardId]);
-
+  const sendInvites = useCallback(
+    async (emails) => {
+      await api.sendInvites(boardId, emails);
+    },
+    [boardId]
+  );
 
   return {
     cardTitle,

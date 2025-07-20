@@ -3,6 +3,7 @@ import { FaInfoCircle, FaEdit, FaTrashAlt } from "react-icons/fa";
 import { Draggable } from "@hello-pangea/dnd";
 
 const TaskItem = ({
+  card,
   task,
   index,
   currentUser,

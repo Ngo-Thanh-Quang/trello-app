@@ -1,17 +1,30 @@
 import axios from "axios";
 import { db } from "../../firebase";
-import { getDocs, query, collection, where, onSnapshot } from "firebase/firestore";
+import {
+  getDocs,
+  query,
+  collection,
+  where,
+  onSnapshot,
+} from "firebase/firestore";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
 const getToken = () => localStorage.getItem("tokenLogin");
 
 export const listenToCardsWithTasks = (boardId, onUpdate) => {
-  const cardQuery = query(collection(db, "cards"), where("boardId", "==", boardId));
-  const taskQuery = query(collection(db, "tasks")); 
+  const cardQuery = query(
+    collection(db, "cards"),
+    where("boardId", "==", boardId)
+  );
+  const taskQuery = query(collection(db, "tasks"));
 
   const unsubCards = onSnapshot(cardQuery, async (cardSnap) => {
-    const cards = cardSnap.docs.map((doc) => ({ id: doc.id, ...doc.data(), tasks: [] }));
+    const cards = cardSnap.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+      tasks: [],
+    }));
 
     const cardsMap = {};
     for (const card of cards) {
@@ -32,7 +45,11 @@ export const listenToCardsWithTasks = (boardId, onUpdate) => {
 
   const unsubTasks = onSnapshot(taskQuery, async () => {
     const cardSnap = await getDocs(cardQuery);
-    const cards = cardSnap.docs.map((doc) => ({ id: doc.id, ...doc.data(), tasks: [] }));
+    const cards = cardSnap.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+      tasks: [],
+    }));
 
     const cardsMap = {};
     for (const card of cards) {
@@ -47,6 +64,10 @@ export const listenToCardsWithTasks = (boardId, onUpdate) => {
       }
     });
 
+    for (const cardId in cardsMap) {
+      cardsMap[cardId].tasks.sort((a, b) => a.order - b.order); // thêm dòng này
+    }
+
     const updatedCards = Object.values(cardsMap);
     onUpdate(updatedCards);
   });
@@ -59,9 +80,12 @@ export const listenToCardsWithTasks = (boardId, onUpdate) => {
 
 export const fetchInvitedEmails = async (boardId) => {
   const token = getToken();
-  const res = await axios.get(`${backendUrl}/boards/${boardId}/invited-emails`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const res = await axios.get(
+    `${backendUrl}/boards/${boardId}/invited-emails`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
   return res.data;
 };
 
@@ -177,11 +201,11 @@ export const updateTaskById = async (taskId, taskData) => {
   });
 };
 
-export const moveTaskToCard = async (taskId, destCardId) => {
+export const moveTaskToCard = async (taskId, destCardId, order) => {
   const token = getToken();
   await axios.put(
     `${backendUrl}/tasks/update-card/${taskId}`,
-    { cardId: destCardId },
+    { cardId: destCardId, order },
     { headers: { Authorization: `Bearer ${token}` } }
   );
 };
