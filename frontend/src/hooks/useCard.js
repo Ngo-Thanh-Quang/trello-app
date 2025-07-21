@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import * as api from "../api/cardApi";
 import { toast } from "react-toastify";
 
@@ -19,6 +19,7 @@ export const useCard = (boardId, showInvite) => {
   const [taskTitle, setTaskTitle] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
   const [isDragging, setIsDragging] = useState(false);
+  const isDraggingRef = useRef(false);
 
   useEffect(() => {
     if (!boardId) return;
@@ -51,7 +52,7 @@ export const useCard = (boardId, showInvite) => {
     fetchAllData();
 
     const unsubscribe = api.listenToCardsWithTasks(boardId, (liveCards) => {
-      if (!isDragging) {
+      if (!isDraggingRef.current) {
         setCards(liveCards);
       }
     });
@@ -116,6 +117,7 @@ export const useCard = (boardId, showInvite) => {
   const onDragEnd = async (result) => {
     const { source, destination, draggableId } = result;
     setIsDragging(true);
+    isDraggingRef.current = true;
 
     if (!destination) return;
 
@@ -199,6 +201,7 @@ export const useCard = (boardId, showInvite) => {
     }
 
     setIsDragging(false);
+    isDraggingRef.current = false;
   };
 
   const detailTask = (task, setShowDetailTask) => {
