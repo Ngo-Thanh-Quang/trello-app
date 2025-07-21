@@ -55,7 +55,6 @@ exports.getBoardById = async (req, res) => {
       return res.status(200).json(board);
     }
     // Kiểm tra nếu user là member với status accepted
-    const db = require('../firebase');
     const inviteSnapshot = await db.collection('invitations')
       .where('board_id', '==', board.id)
       .where('email_member', '==', req.userEmail)
@@ -119,10 +118,14 @@ exports.deleteBoard = async (req, res) => {
         await Promise.all(deleteTaskPromises);
       }
     }
-
-    // Xóa tất cả cards
+    // xoa card lien quan den board
     const deleteCardPromises = cardsSnapshot.docs.map(doc => doc.ref.delete());
     await Promise.all(deleteCardPromises);
+
+    // xoa invites lien quan den board
+    const invitesSnapshot = await db.collection('invitations').where('board_id', '==', id).get();
+    const deleteInvitePromises = invitesSnapshot.docs.map(doc => doc.ref.delete());
+    await Promise.all(deleteInvitePromises);
 
     // Xóa board
     await boardsModel.deleteBoard(id);
