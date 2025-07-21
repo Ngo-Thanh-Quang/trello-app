@@ -13,9 +13,11 @@ const BoardPage = () => {
     handleCreateBoard,
     handleEditBoard,
     handleDeleteBoard,
-    boardMembers
+    boardMembers,
+    handleRemoveMember
   } = useBoards();
-
+  const [editMembers, setEditMembers] = useState([]);
+  const [removedInviteIds, setRemovedInviteIds] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [newBoard, setNewBoard] = useState({ name: "", description: "" });
@@ -25,22 +27,28 @@ const BoardPage = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteBoardId, setDeleteBoardId] = useState(null);
 
-
-
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (sidebarRef.current && !sidebarRef.current.contains(e.target)) {
         setSidebarOpen(false);
       }
     };
-
     if (sidebarOpen) {
       document.addEventListener("mousedown", handleClickOutside);
+    }
+   
+    if (showEditModal && editBoardData.id && boardMembers[editBoardData.id]) {
+      setEditMembers(boardMembers[editBoardData.id]);
+      setRemovedInviteIds([]);
+    }
+    if (!showEditModal) {
+      setEditMembers([]);
+      setRemovedInviteIds([]);
     }
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [sidebarOpen]);
+  }, [sidebarOpen, showEditModal, editBoardData.id, boardMembers]);
 
   return (
     <>
@@ -74,6 +82,7 @@ const BoardPage = () => {
           onSelectBoard: setSelectedBoardId,
           handleEditBoard,
           handleDeleteBoard,
+          handleRemoveMember,
           showEditModal,
           setShowEditModal,
           editBoardData,
@@ -126,12 +135,16 @@ const BoardPage = () => {
         <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
           <form
             className="bg-white p-6 rounded shadow-md w-96 text-gray-800"
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
               handleEditBoard(editBoardData.id, {
                 name: editBoardData.name,
                 description: editBoardData.description,
               });
+              // Xóa các member đã bị loại khi bấm Save
+              for (const inviteId of removedInviteIds) {
+                await handleRemoveMember(editBoardData.id, { inviteId });
+              }
               setShowEditModal(false);
               setEditBoardData({ id: '', name: '', description: '' });
             }}
@@ -154,6 +167,36 @@ const BoardPage = () => {
                 setEditBoardData({ ...editBoardData, description: e.target.value })
               }
             />
+
+            <p className="text-gray-600 group-hover:text-gray-800 transition-colors min-h-[32px]">
+              {editMembers && editMembers.length > 0 ? (
+                <span className="flex flex-wrap gap-2">
+                  Members:
+                  {editMembers.map((member, index) => (
+                    <span
+                      key={member.inviteId || member.id || index}
+                      className="flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-full"
+                    >
+                      {member.name}
+                      <button
+                        type="button"
+                        className="text-red-500 hover:text-red-700"
+                        onClick={() => {
+                          setEditMembers(editMembers.filter(m => m.inviteId !== member.inviteId));
+                          setRemovedInviteIds([...removedInviteIds, member.inviteId]);
+                        }}
+                        title="Remove member"
+                      >
+                        &times;
+                      </button>
+                    </span>
+                  ))}
+                </span>
+              ) : (
+                <span className="italic text-gray-400">Members: No one</span>
+              )}
+            </p>
+
             <div className="flex justify-end gap-2">
               <button
                 type="button"
