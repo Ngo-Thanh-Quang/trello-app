@@ -5,18 +5,23 @@ import Home from "./pages/Home";
 import Profile from "./pages/Profile";
 import Card from "./pages/Card";
 import Login from "./pages/Login";
-import Dashboard from "./components/Dashboard";
+import Dashboard from "./components/board/Dashboard";
+import Notifications from "./pages/Notifications";
+
+
 
 const App = () => {
   return (
     <BrowserRouter>
-      <ToastContainer />
+      <ToastContainer autoClose={1000} pauseOnHover={false} />
       <Routes>
         <Route path="/" element={<Home />}>
           <Route index element={<Dashboard />} />
+          <Route path="profile/:email" element={<Profile />} />
           <Route path="profile" element={<Profile />} />
-          <Route path="card" element={<Card />} />
+          <Route path="board/:boardId" element={<Card />} />
           <Route path="login" element={<Login />} />
+          <Route path="notifications" element={<Notifications />} />
         </Route>
       </Routes>
     </BrowserRouter>

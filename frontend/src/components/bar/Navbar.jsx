@@ -13,17 +13,14 @@ const Navbar = () => {
 
   return (
     <>
-      <div className="h-20 bg-blue-500 place-content-between items-center flex md:px-10 px-5 shadow-md fixed top-0 left-0 right-0 z-50">
-         <div className="flex items-center gap-2 px-6 py-5 font-bold text-xl border-b border-blue-500 text-white">
+      <div className="h-20 bg-blue-700 place-content-between items-center flex md:px-10 px-5 shadow-md fixed top-0 left-0 right-0 z-50">
+         <div className="flex items-center gap-2 px-6 py-5 font-bold text-xl text-white">
                 <FaThLarge className="text-2xl" />
                 <Link to="/">Trello App</Link>
               </div>
 
         <div className="gap-5 text-white font-semibold">
-          <button onClick={handleLogout} className="px-4 py-2 bg-white text-blue-700 rounded-md font-bold hover:bg-gray-300 transition cursor-pointer hidden sm:block">Log Out</button>
-          <button onClick={handleLogout} className="cursor-pointer block sm:hidden text-2xl">
-            <FaRegArrowAltCircleRight />
-          </button>
+          <button onClick={handleLogout} className="px-4 py-2 bg-white text-blue-700 rounded-md font-bold hover:bg-gray-300 transition cursor-pointer hidden md:block">Log Out</button>
         </div>
 
       </div>
