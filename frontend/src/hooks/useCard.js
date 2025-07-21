@@ -18,6 +18,7 @@ export const useCard = (boardId, showInvite) => {
   const [taskStatus, setTaskStatus] = useState("");
   const [taskTitle, setTaskTitle] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     if (!boardId) return;
@@ -50,25 +51,27 @@ export const useCard = (boardId, showInvite) => {
     fetchAllData();
 
     const unsubscribe = api.listenToCardsWithTasks(boardId, (liveCards) => {
-      setCards(liveCards);
+      if (!isDragging) {
+        setCards(liveCards);
+      }
     });
 
     return () => unsubscribe();
   }, [boardId]);
 
   useEffect(() => {
-  const fetchInvites = async () => {
-    if (!boardId || !showInvite) return;
-    try {
-      const invited = await api.fetchInvitedEmails(boardId);
-      setAlreadyInvited(invited);
-    } catch (err) {
-      console.error("Error fetching invited users:", err);
-    }
-  };
+    const fetchInvites = async () => {
+      if (!boardId || !showInvite) return;
+      try {
+        const invited = await api.fetchInvitedEmails(boardId);
+        setAlreadyInvited(invited);
+      } catch (err) {
+        console.error("Error fetching invited users:", err);
+      }
+    };
 
-  fetchInvites();
-}, [boardId, showInvite]);
+    fetchInvites();
+  }, [boardId, showInvite]);
 
   const addCard = async (boardId, title) => {
     if (!title) return;
@@ -112,6 +115,7 @@ export const useCard = (boardId, showInvite) => {
 
   const onDragEnd = async (result) => {
     const { source, destination, draggableId } = result;
+    setIsDragging(true);
 
     if (!destination) return;
 
@@ -128,6 +132,16 @@ export const useCard = (boardId, showInvite) => {
         ...task,
         order: index,
       }));
+
+      for (const task of updatedTasks) {
+        await api.updateTaskById(task.id, {
+          title: task.title,
+          description: task.description,
+          status: task.status,
+          assignee: task.assignee,
+          order: task.order,
+        });
+      }
 
       const updatedCard = cards.map((card) =>
         card.id === sourceCard.id ? { ...card, tasks: sourceTasks } : card
@@ -163,6 +177,15 @@ export const useCard = (boardId, showInvite) => {
         return card;
       });
       setCards(updatedCard);
+      for (const task of updatedDestTasks) {
+        await api.updateTaskById(task.id, {
+          title: task.title,
+          description: task.description,
+          status: task.status,
+          assignee: task.assignee,
+          order: task.order,
+        });
+      }
 
       try {
         await api.moveTaskToCard(
@@ -174,6 +197,8 @@ export const useCard = (boardId, showInvite) => {
         console.error("Failed to move task:", err);
       }
     }
+
+    setIsDragging(false);
   };
 
   const detailTask = (task, setShowDetailTask) => {

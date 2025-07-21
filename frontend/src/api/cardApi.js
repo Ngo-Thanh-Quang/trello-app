@@ -6,6 +6,7 @@ import {
   collection,
   where,
   onSnapshot,
+  orderBy,
 } from "firebase/firestore";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
@@ -17,7 +18,7 @@ export const listenToCardsWithTasks = (boardId, onUpdate) => {
     collection(db, "cards"),
     where("boardId", "==", boardId)
   );
-  const taskQuery = query(collection(db, "tasks"));
+  const taskQuery = query(collection(db, "tasks"), orderBy("order", "asc"));
 
   const unsubCards = onSnapshot(cardQuery, async (cardSnap) => {
     const cards = cardSnap.docs.map((doc) => ({
@@ -31,7 +32,9 @@ export const listenToCardsWithTasks = (boardId, onUpdate) => {
       cardsMap[card.id] = card;
     }
 
-    const taskSnap = await getDocs(query(collection(db, "tasks")));
+    const taskSnap = await getDocs(
+      query(collection(db, "tasks"), orderBy("order", "asc"))
+    );
     taskSnap.forEach((doc) => {
       const task = { id: doc.id, ...doc.data() };
       if (cardsMap[task.cardId]) {
@@ -56,7 +59,9 @@ export const listenToCardsWithTasks = (boardId, onUpdate) => {
       cardsMap[card.id] = card;
     }
 
-    const taskSnap = await getDocs(query(collection(db, "tasks")));
+    const taskSnap = await getDocs(
+      query(collection(db, "tasks"), orderBy("order", "asc"))
+    );
     taskSnap.forEach((doc) => {
       const task = { id: doc.id, ...doc.data() };
       if (cardsMap[task.cardId]) {

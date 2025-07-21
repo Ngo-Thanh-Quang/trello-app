@@ -26,14 +26,21 @@ exports.deleteTask = async (taskId) => {
   await tasksCollection.doc(taskId).delete();
 };
 
-exports.updateTask = async (taskId, title, description, status, assignee) => {
+exports.updateTask = async (taskId, title, description, status, assignee, order) => {
   const taskRef = tasksCollection.doc(taskId);
-  await taskRef.update({
+
+  const updateData = {
     title,
     description,
     status,
     assignee
-  });
+  };
+
+  if (order !== undefined) {
+    updateData.order = order;
+  }
+
+  await taskRef.update(updateData);
 };
 
 exports.updateTaskMove = async (taskId, cardId, order) => {
