@@ -9,6 +9,14 @@ export const getProfile = async (token) => {
   return res.data;
 };
 
+export const getProfileByEmail = async (email, token) => {
+  const res = await axios.get(`${backendUrl}/profile/${email}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data;
+};
+
+
 export const updateProfileName = async (token, name) => {
   const res = await axios.put(
     `${backendUrl}/profile`,

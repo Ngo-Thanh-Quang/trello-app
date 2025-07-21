@@ -12,10 +12,11 @@ exports.createTask = async (cardId, content) => {
   const newTask = {
     cardId,
     title: content,
-    assignee: "", 
+    assignee: [], 
     description: "",
     status: "To do",
     createdAt: new Date().toISOString(),
+    order: Date.now(),
   };
   const taskRef = await tasksCollection.add(newTask);
   return { id: taskRef.id, ...newTask };
@@ -35,9 +36,9 @@ exports.updateTask = async (taskId, title, description, status, assignee) => {
   });
 };
 
-exports.updateTaskMove = async (taskId, cardId) => {
+exports.updateTaskMove = async (taskId, cardId, order) => {
   const taskRef = tasksCollection.doc(taskId);
-  await taskRef.update({ cardId });
+  await taskRef.update({ cardId, order });
 };
 
 

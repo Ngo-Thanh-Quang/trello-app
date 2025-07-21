@@ -1,6 +1,5 @@
-// src/pages/Home.jsx
 import React, { useEffect, useState } from "react";
-import Navbar from "../components/Navbar";
+import Navbar from "../components/bar/Navbar";
 import Login from "./Login";
 import BoardPage from "./Board";
 

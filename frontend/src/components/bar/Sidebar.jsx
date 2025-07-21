@@ -38,7 +38,7 @@ const Sidebar = forwardRef(({
   return (
     <aside
     ref={ref}
-      className={`h-screen fixed top-20 left-0 z-10 w-64 bg-gradient-to-b from-blue-500 to-blue-800 text-white flex flex-col shadow-lg transform transition-transform duration-300
+      className={`h-screen fixed top-20 left-0 z-10 w-64 bg-gradient-to-b from-blue-700 to-blue-500 text-white flex flex-col shadow-lg transform transition-transform duration-300
     ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
     md:translate-x-0 md:h-screen`}
     >
@@ -132,8 +132,8 @@ const Sidebar = forwardRef(({
           </Link>
         </div>
 
-        <div className="flex font-semibold items-center gap-3 px-4 py-3 rounded-lg w-full transition-all hover:bg-white/10">
-          <button onClick={handleLogout} className="flex items-center md:hidden gap-3 rounded-lg w-full" >
+        <div className="flex font-semibold items-center gap-3 px-4 py-3 md:hidden rounded-lg w-full transition-all hover:bg-white/10">
+          <button onClick={handleLogout} className="flex items-center gap-3 rounded-lg w-full" >
             <FaSignOutAlt /> Log Out
           </button>
         </div>

@@ -1,6 +1,6 @@
 import React from "react";
 import { useOutletContext } from "react-router";
-import Card from "../pages/Card";
+import Card from "../../pages/Card";
 import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
@@ -77,26 +77,28 @@ const Dashboard = () => {
                   </div>
                 ))}
               </div>
-              <h2 className="text-xl font-bold mb-4">Board Invitations</h2>
+              <h2 className="text-xl font-bold m-4">Board Invitations</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {invitedBoards.length > 0 ? (
-                  invitedBoards.map((board) => (
-                    <div
-                      key={board.id}
-                      className="bg-white p-3 rounded-lg shadow-md transition-transform transform hover:-translate-y-1 hover:shadow-xl cursor-pointer border border-transparent hover:border-green-400 group"
-                      onClick={() => navigate(`/board/${board.id}`)}
-                    >
-                      <h3 className="font-bold text-lg text-green-700 group-hover:text-green-900 transition-colors mb-1 truncate">
-                        {board.name}
-                      </h3>
-                      <p className="text-gray-600 group-hover:text-gray-800 transition-colors min-h-[32px]">
-                        {board.description || <span className="italic text-gray-400">No description</span>}
-                      </p>
-                      <p className="text-gray-600 group-hover:text-gray-800 transition-colors min-h-[32px]">
-                        <span className="italic text-gray-400">Status: Accepted</span>
-                      </p>
-                    </div>
-                  ))
+                  invitedBoards
+                    .filter(board => !boards.some(b => b.id === board.id))
+                    .map((board) => (
+                      <div
+                        key={board.id}
+                        className="bg-white p-3 rounded-lg shadow-md transition-transform transform hover:-translate-y-1 hover:shadow-xl cursor-pointer border border-transparent hover:border-green-400 group"
+                        onClick={() => navigate(`/board/${board.id}`)}
+                      >
+                        <h3 className="font-bold text-lg text-green-700 group-hover:text-green-900 transition-colors mb-1 truncate">
+                          {board.name}
+                        </h3>
+                        <p className="text-gray-600 group-hover:text-gray-800 transition-colors min-h-[32px]">
+                          {board.description || <span className="italic text-gray-400">No description</span>}
+                        </p>
+                        <p className="text-gray-600 group-hover:text-gray-800 transition-colors min-h-[32px]">
+                          <span className="italic text-gray-400">Status: Accepted</span>
+                        </p>
+                      </div>
+                    ))
                 ) : (
                   <div className="text-xs text-blue-400 px-2 py-1">No invited boards</div>
                 )}
