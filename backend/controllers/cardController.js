@@ -1,4 +1,5 @@
 const cardsModel = require("../models/cardModel");
+const db = require('../firebase');
 
 exports.getCardsByBoardId = async (req, res) => {
   const { boardId } = req.params;
@@ -46,6 +47,10 @@ exports.updateCard = async (req, res) => {
 
 exports.deleteCard = async (req, res) => {
   try {
+    const tasksSnapshot = await db.collection('tasks').where('cardId', '==', req.params.id).get();
+    const deleteTaskPromises = tasksSnapshot.docs.map(doc => doc.ref.delete());
+    await Promise.all(deleteTaskPromises);
+
     await cardsModel.deleteCard(req.params.id);
     return res.status(204).send();
   } catch (error) {
