@@ -6,6 +6,7 @@ import {
     createBoard,
     editBoard,
     deleteBoard,
+    removeBoardMember,
 } from "../api/boardApi";
 import { toast } from "react-toastify";
 
@@ -82,6 +83,17 @@ const useBoards = () => {
         }
     };
 
+    const handleRemoveMember = async (boardId, member) => {
+        if (!window.confirm(`Remove ${member.name} from this board?`)) return;
+        try {
+            await removeBoardMember(boardId, member.inviteId, token);
+            toast.success(`Removed ${member.name}`);
+            await refreshAll();
+        } catch (err) {
+            toast.error("Remove member failed!");
+        }
+    };
+
     const refreshAll = async () => {
         if (!token) return;
         try {
@@ -115,6 +127,7 @@ const useBoards = () => {
         handleCreateBoard,
         handleEditBoard,
         handleDeleteBoard,
+        handleRemoveMember,
     };
 };
 

@@ -18,5 +18,6 @@ router.post('/:boardId/invite', authToken, inviteController.inviteToBoard);
 router.post('/:boardId/invite/accept', authToken, inviteController.acceptInvite);
 router.get('/:boardId/invited-emails', inviteController.getInvitedEmails);
 router.get('/:boardId/accepted-members', inviteController.getAcceptedMembers);
+router.delete('/:boardId/accepted-members/:inviteId', inviteController.deleteAcceptedMember);
 
 module.exports = router;
